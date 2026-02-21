@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Montclair Question 2 Impact - Stacked</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #fdfdfd; padding: 20px; color: #333; line-height: 1.6; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .chart-box { border: 1px solid #eee; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); background: #fff; }
+        .controls { text-align: center; margin-bottom: 25px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #e9ecef; }
+        .toggle-btn { padding: 10px 24px; cursor: pointer; border: 2px solid #2c3e50; background: #fff; color: #2c3e50; font-weight: bold; font-size: 15px; border-radius: 6px; transition: 0.3s; margin: 0 5px; }
+        .toggle-btn:hover { background: #eef2f5; }
+        .active { background: #2c3e50 !important; color: white !important; }
+        h1 { text-align: center; margin-bottom: 5px; font-size: 28px; color: #2c3e50; }
+        p.subtitle { text-align: center; color: #666; margin-bottom: 20px; font-size: 16px; }
+        .unit-note { font-size: 12px; color: #888; text-align: right; margin-bottom: 10px; font-style: italic; }
+        
+        /* D3 Chart Text Styling */
+        .bar-label { font-size: 12px; font-weight: bold; fill: white; text-anchor: middle; pointer-events: none; }
+        .bar-sub { font-size: 10px; fill: white; text-anchor: middle; pointer-events: none; }
+        .axis-text { font-size: 14px; font-weight: bold; fill: #333; }
+        .year-title { font-size: 16px; font-weight: bold; fill: #2c3e50; text-anchor: middle; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Montclair Budget: Stacked View</h1>
+        <p class="subtitle">How the pieces stack up to meet our total budget needs.</p>
+
+        <div class="controls">
+            <span style="font-weight: bold; margin-right: 15px; font-size: 16px;">Test the scenarios:</span>
+            <button id="btn-current" class="toggle-btn active" onclick="updateChart('current')">Current State</button>
+            <button id="btn-no" class="toggle-btn" onclick="updateChart('no')">If we vote NO</button>
+            <button id="btn-yes" class="toggle-btn" onclick="updateChart('yes')">If we vote YES</button>
+        </div>
+
+        <div class="chart-box">
+            <div class="unit-note">All figures in Millions (M). Y-Axis starts at $140M to show detail.</div>
+            <div id="dataviz"></div>
+        </div>
+    </div>
+
+    <script>
+        const width = 840, height = 500;
+        const margin = { top: 40, right: 40, bottom: 40, left: 60 };
+        const innerWidth = width - margin.left - margin.right;
+        const innerHeight = height - margin.top - margin.bottom;
+
+        const svg = d3.select("#dataviz").append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        // X and Y Scales (Y starts at 140 to zoom in on the action)
+        const xYear = d3.scaleBand().domain(["2025-26", "2026-27"]).range([0, innerWidth]).padding(0.2);
+        const y = d3.scaleLinear().domain([140, 170]).range([innerHeight, 0]);
+
+        // Axes & Dividers
+        svg.append("g").call(d3.axisLeft(y).ticks(8).tickFormat(d => "$" + d + "M"));
+        svg.append("line").attr("x1", innerWidth/2).attr("y1", -20).attr("x2", innerWidth/2).attr("y2", innerHeight).attr("stroke", "#eee").attr("stroke-width", 2).attr("stroke-dasharray", "5,5");
+           
+        // Year Titles
+        svg.append("text").attr("class", "year-title").attr("x", xYear("2025-26") + xYear.bandwidth()/2).attr("y", -10).text("Year 1: 2025-26");
+        svg.append("text").attr("class", "year-title").attr("x", xYear("2026-27") + xYear.bandwidth()/2).attr("y", -10).text("Year 2: 2026-27");
+
+        // Colors
+        const colBase = "#4a71be"; // Blue
+        const colLevy = "#5bace3"; // Light Blue
+        const colLoan = "#f1c40f"; // Yellow
+        const colGap  = "#e74c3c"; // Red
+        const colCut  = "#c0392b"; // Dark Red
+
+        // Helper function to create a stack block
+        function createBlock(year, id) {
+            const g = svg.append("g").attr("id", `${year}-${id}`);
+            const rect = g.append("rect").attr("x", xYear(year)).attr("width", xYear.bandwidth()).attr("y", y(140)).attr("height", 0);
+            const title = g.append("text").attr("class", "bar-label").attr("x", xYear(year) + xYear.bandwidth()/2).attr("y", y(140)).attr("opacity", 0);
+            const sub = g.append("text").attr("class", "bar-sub").attr("x", xYear(year) + xYear.bandwidth()/2).attr("y", y(140)).attr("opacity", 0);
+            return { rect, title, sub, g };
+        }
+
+        // Initialize blocks for 2025
+        const b25Base = createBlock("2025-26", "base");
+        const b25Fix  = createBlock("2025-26", "fix");
+        const b25Gap  = createBlock("2025-26", "gap");
+        const b25Cut  = createBlock("2025-26", "cut");
+
+        // Initialize blocks for 2026
+        const b26Base = createBlock("2026-27", "base");
+        const b26Fix  = createBlock("2026-27", "fix"); // Placeholder, usually 0
+        const b26Gap  = createBlock("2026-27", "gap");
+        const b26Cut  = createBlock("2026-27", "cut");
+
+        // Animation function to update a block
+        function updateBlock(block, t, bottom, val, color, titleTxt, subTxt) {
+            const top = bottom + val;
+            const h = y(bottom) - y(top);
+            const midY = y(top) + h/2;
+
+            block.rect.transition(t).attr("y", y(top)).attr("height", Math.max(0, h)).attr("fill", color);
+            
+            if (val > 1.5) { // Only show text if the block is tall enough
+                block.title.transition(t).attr("y", midY - 2).text(titleTxt).attr("opacity", 1);
+                block.sub.transition(t).attr("y", midY + 10).text(subTxt).attr("opacity", 1);
+            } else {
+                block.title.transition(t).attr("opacity", 0);
+                block.sub.transition(t).attr("opacity", 0);
+            }
+            return top; // Return new top for the next block to stack on
+        }
+
+        // --- MASTER UPDATE LOGIC ---
+        function updateChart(state) {
+            d3.selectAll(".toggle-btn").classed("active", false);
+            d3.select(`#btn-${state}`).classed("active", true);
+
+            const t = d3.transition().duration(800).ease(d3.easeCubicInOut);
+
+            if (state === 'current') {
+                // 2025 Stack
+                let top25 = 140; // Base Y
+                top25 = updateBlock(b25Base, t, top25, 14.2, colBase, "Base Revenue", "$154.2M"); // 154.2 - 140 = 14.2
+                top25 = updateBlock(b25Fix, t, top25, 0, colLevy, "", ""); 
+                top25 = updateBlock(b25Gap, t, top25, 5.0, colGap, "Funding Gap", "$5.0M");
+                top25 = updateBlock(b25Cut, t, top25, 2.8, colCut, "Mid-Year Cuts", "$2.8M");
+
+                // 2026 Stack (Hidden)
+                let top26 = 140;
+                top26 = updateBlock(b26Base, t, top26, 0, colBase, "", "");
+                top26 = updateBlock(b26Fix, t, top26, 0, colLevy, "", "");
+                top26 = updateBlock(b26Gap, t, top26, 0, colGap, "", "");
+                top26 = updateBlock(b26Cut, t, top26, 0, colCut, "", "");
+
+            } else if (state === 'no') {
+                // 2025 Stack (Loan fills Gap)
+                let top25 = 140;
+                top25 = updateBlock(b25Base, t, top25, 14.2, colBase, "Base Revenue", "$154.2M");
+                top25 = updateBlock(b25Fix, t, top25, 5.0, colLoan, "Advance Aid (Loan)", "$5.0M"); 
+                top25 = updateBlock(b25Gap, t, top25, 0, colGap, "", "");
+                top25 = updateBlock(b25Cut, t, top25, 2.8, colCut, "Mid-Year Cuts", "$2.8M");
+
+                // 2026 Stack (Massive Gap)
+                let top26 = 140;
+                top26 = updateBlock(b26Base, t, top26, 13.3, colBase, "Base Rev (Less Aid)", "$153.3M"); // 153.3 - 140 = 13.3
+                top26 = updateBlock(b26Fix, t, top26, 0, colLevy, "", "");
+                top26 = updateBlock(b26Gap, t, top26, 10.0, colGap, "Compounded Gap", "$10.0M");
+                top26 = updateBlock(b26Cut, t, top26, 3.5, colCut, "Annualized Cuts", "$3.5M");
+
+            } else if (state === 'yes') {
+                // 2025 Stack (Levy fills Gap)
+                let top25 = 140;
+                top25 = updateBlock(b25Base, t, top25, 14.2, colBase, "Base Revenue", "$154.2M");
+                top25 = updateBlock(b25Fix, t, top25, 5.0, colLevy, "Tax Levy (Permanent)", "$5.0M"); 
+                top25 = updateBlock(b25Gap, t, top25, 0, colGap, "", "");
+                top25 = updateBlock(b25Cut, t, top25, 2.8, colCut, "Mid-Year Cuts", "$2.8M");
+
+                // 2026 Stack (Stable Gap)
+                let top26 = 140;
+                top26 = updateBlock(b26Base, t, top26, 20.2, colBase, "Stable Base Rev", "$160.2M"); // 160.2 - 140 = 20.2
+                top26 = updateBlock(b26Fix, t, top26, 0, colLevy, "", "");
+                top26 = updateBlock(b26Gap, t, top26, 3.7, colGap, "Remaining Gap", "$3.7M");
+                top26 = updateBlock(b26Cut, t, top26, 3.5, colCut, "Annualized Cuts", "$3.5M");
+            }
+        }
+
+        // Initialize to "Current" state on load
+        updateChart('current');
+    </script>
+</body>
+</html>
