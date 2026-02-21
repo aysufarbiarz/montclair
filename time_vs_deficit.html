@@ -84,8 +84,9 @@
         });
 
         // Add the committed cuts text below the years
-        svg.append("text").attr("class", "cut-text").attr("x", x0("Year 1: 2025-26") + x0.bandwidth()/2).attr("y", innerHeight + 55).text("Both paths require $2.8M").append("tspan").attr("x", x0("Year 1: 2025-26") + x0.bandwidth()/2).attr("dy", "1.2em").text("in committed cuts.");
-        svg.append("text").attr("class", "cut-text").attr("x", x0("Year 2: 2026-27") + x0.bandwidth()/2).attr("y", innerHeight + 55).text("Both paths require $3.5M").append("tspan").attr("x", x0("Year 2: 2026-27") + x0.bandwidth()/2).attr("dy", "1.2em").text("in committed cuts.");
+        svg.append("text").attr("class", "cut-text").attr("x", x0("Year 1: 2025-26") + x0.bandwidth()/2).attr("y", innerHeight + 55).text("These balances are over and above").append("tspan").attr("x", x0("Year 1: 2025-26") + x0.bandwidth()/2).attr("dy", "1.2em").text("the $2.8M committed cuts.");
+        
+        svg.append("text").attr("class", "cut-text").attr("x", x0("Year 2: 2026-27") + x0.bandwidth()/2).attr("y", innerHeight + 55).text("Both budget deficits are over and above").append("tspan").attr("x", x0("Year 2: 2026-27") + x0.bandwidth()/2).attr("dy", "1.2em").text("the $3.5M committed cuts.");
 
         // --- DRAW THE BARS & ANNOTATIONS ---
         
@@ -129,7 +130,7 @@
              
         g2026.append("text").attr("class", "annotation").attr("x", x1("yes") + x1.bandwidth()/2).attr("y", zeroY - 80).attr("fill", "#1565c0").attr("opacity", 0)
              .transition().delay(1200).duration(500).attr("opacity", 1)
-             .text("Tax Levy adds $5.0M.")
+             .text("$5.0M Tax Levy carries over.")
              .append("tspan").attr("x", x1("yes") + x1.bandwidth()/2).attr("dy", "1.2em").text("No loans to repay.")
              .append("tspan").attr("x", x1("yes") + x1.bandwidth()/2).attr("dy", "1.2em").attr("class", "alert-text").text("Need $3.7M ADDITIONAL cuts.");
 
