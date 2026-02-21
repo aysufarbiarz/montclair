@@ -6,7 +6,7 @@
     <title>Montclair Referendum Impact</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: #fff; padding: 20px; color: #333; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #fff; padding: 20px; color: #333; line-height: 1.6; }
         .container { display: flex; flex-wrap: wrap; gap: 30px; justify-content: center; }
         .chart-box { border: 1px solid #eee; padding: 20px; width: 520px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .controls { text-align: center; margin-bottom: 30px; }
@@ -14,8 +14,14 @@
         .active { background: #333; color: white; }
         h1 { text-align: center; margin-bottom: 5px; }
         p.subtitle { text-align: center; color: #666; margin-bottom: 25px; }
-        .label-bold { font-weight: bold; font-size: 13px; }
         .unit-note { font-size: 12px; color: #888; text-align: right; margin-bottom: 5px; }
+        
+        /* Key Terms Styling */
+        .key-terms { max-width: 1070px; margin: 40px auto; padding: 20px; background: #fdfdfd; border-left: 5px solid #333; border-radius: 4px; }
+        .term-item { margin-bottom: 15px; }
+        .term-title { font-weight: bold; color: #2c3e50; }
+        .tag-no { color: #d68910; font-weight: bold; } /* Gold color */
+        .tag-yes { color: #2980b9; font-weight: bold; } /* Blue color */
     </style>
 </head>
 <body>
@@ -31,3 +37,99 @@
     <div class="container">
         <div class="chart-box">
             <div style="text-align:center; font-weight:bold; margin-bottom:10px;">Current State (Before Q2)</div>
+            <div class="unit-note">All figures in Millions (M)</div>
+            <div id="as-is"></div>
+        </div>
+
+        <div class="chart-box">
+            <div id="dynamic-title" style="text-align:center; font-weight:bold; margin-bottom:10px;">Scenario: No on Q2</div>
+            <div class="unit-note">All figures in Millions (M)</div>
+            <div id="comparison"></div>
+        </div>
+    </div>
+
+    <div class="key-terms">
+        <h3>Key Terms & Context</h3>
+        <div class="term-item">
+            <span class="term-title">Funding Gap ($5M):</span> The difference between what the schools need to spend to maintain current services ($159.2M) and the expected revenue ($154.2M).
+        </div>
+        <div class="term-item">
+            <span class="tag-no">Advance of State Aid (Vote No):</span> This is essentially a **loan** from the State of New Jersey. While it covers the $5M gap now, it must be repaid with interest in future budget cycles, which may lead to further cuts later.
+        </div>
+        <div class="term-item">
+            <span class="tag-yes">Tax Levy (Vote Yes):</span> This is a **permanent increase** in the local tax rate. It covers the $5M gap by increasing the baseline revenue, avoiding the need for a state loan and future interest payments.
+        </div>
+        <div class="term-item">
+            <span class="term-title">Mid-year Cuts ($2.8M):</span> These represent potential reductions in staff, programs, or resources that may be required during the school year if the budget is not fully balanced.
+        </div>
+    </div>
+
+    <script>
+        const data = { rev: 154.2, exp: 159.2, gap: 5.0, cuts: 2.8 };
+        const w = 520, h = 450, margin = {top: 50, right: 80, bottom: 50, left: 60};
+        
+        const x = d3.scaleBand().domain(["Revenue", "Expenditure"]).range([margin.left, w - margin.right]).padding(0.4);
+        const y = d3.scaleLinear().domain([140, 170]).range([h - margin.bottom, margin.top]);
+
+        function drawBase(selector) {
+            const svg = d3.select(selector).append("svg").attr("width", w).attr("height", h);
+            svg.append("g").attr("transform", `translate(${margin.left},0)`).call(d3.axisLeft(y).ticks(6).tickFormat(d => "$" + d + "M"));
+            svg.append("g").attr("transform", `translate(0,${h - margin.bottom})`).call(d3.axisBottom(x));
+            
+            svg.append("defs").append("marker")
+                .attr("id", "arrow").attr("viewBox", "0 0 10 10").attr("refX", 5).attr("refY", 5)
+                .attr("markerWidth", 4).attr("markerHeight", 4).attr("orient", "auto")
+                .append("path").attr("d", "M 0 0 L 10 5 L 0 10 z").attr("fill", "#ed7d31");
+                
+            return svg;
+        }
+
+        const svgLeft = drawBase("#as-is");
+        const svgRight = drawBase("#comparison");
+
+        function renderLeft() {
+            svgLeft.append("rect").attr("x", x("Revenue")).attr("y", y(data.rev)).attr("width", x.bandwidth()).attr("height", y(140) - y(data.rev)).attr("fill", "#4a71be");
+            svgLeft.append("rect").attr("x", x("Expenditure")).attr("y", y(data.exp)).attr("width", x.bandwidth()).attr("height", y(140) - y(data.exp)).attr("fill", "#54ad66");
+            
+            svgLeft.append("text").attr("x", x("Revenue") + x.bandwidth()/2).attr("y", y(data.rev) + 20).attr("text-anchor", "middle").attr("fill", "white").style("font-size", "12px").text(`$${data.rev}M`);
+            svgLeft.append("text").attr("x", x("Expenditure") + x.bandwidth()/2).attr("y", y(data.exp) + 20).attr("text-anchor", "middle").attr("fill", "white").style("font-size", "12px").text(`$${data.exp}M`);
+
+            const gapX = x("Revenue") + x.bandwidth() + 15;
+            svgLeft.append("line").attr("x1", gapX).attr("y1", y(data.rev)).attr("x2", gapX).attr("y2", y(data.exp))
+                .attr("stroke", "#ed7d31").attr("stroke-width", 2).attr("marker-start", "url(#arrow)").attr("marker-end", "url(#arrow)");
+            
+            svgLeft.append("text").attr("x", gapX + 5).attr("y", y((data.rev + data.exp)/2)).attr("fill", "#ed7d31").style("font-weight", "bold").style("font-size", "14px").text(`$${data.gap}M Funding Gap`);
+        }
+
+        function update(isYes) {
+            d3.select("#no-btn").classed("active", !isYes);
+            d3.select("#yes-btn").classed("active", isYes);
+            d3.select("#dynamic-title").text(`Scenario: ${isYes ? 'Yes' : 'No'} on Q2`);
+            
+            svgRight.selectAll(".dynamic-content").remove();
+            const group = svgRight.append("g").attr("class", "dynamic-content");
+
+            group.append("rect").attr("x", x("Revenue")).attr("y", y(data.rev)).attr("width", x.bandwidth()).attr("height", y(140) - y(data.rev)).attr("fill", "#4a71be");
+            
+            const topFill = isYes ? "#5bace3" : "#ffc000";
+            group.append("rect").attr("x", x("Revenue")).attr("y", y(data.rev + 5)).attr("width", x.bandwidth()).attr("height", y(data.rev) - y(data.rev+5)).attr("fill", topFill);
+            
+            const label = isYes ? "Tax Levy" : "Advance Aid";
+            group.append("text").attr("x", x("Revenue") + x.bandwidth()/2).attr("y", y(data.rev + 4)).attr("text-anchor", "middle").style("font-size", "11px").style("font-weight", "bold")
+                .append("tspan").attr("x", x("Revenue") + x.bandwidth()/2).text(label)
+                .append("tspan").attr("x", x("Revenue") + x.bandwidth()/2).attr("dy", "1.2em").text("$5M");
+
+            group.append("rect").attr("x", x("Expenditure")).attr("y", y(data.exp)).attr("width", x.bandwidth()).attr("height", y(140) - y(data.exp)).attr("fill", "#54ad66");
+            
+            group.append("rect").attr("x", x("Expenditure")).attr("y", y(data.exp + 2.8)).attr("width", x.bandwidth()).attr("height", y(y(140)) - y(data.exp)).attr("fill", "#e2efda").attr("stroke", "#000").attr("stroke-dasharray", "3");
+            
+            group.append("text").attr("x", x("Expenditure") + x.bandwidth()/2).attr("y", y(data.exp + 2.2)).attr("text-anchor", "middle").style("font-size", "10px").style("font-weight", "bold")
+                .append("tspan").attr("x", x("Expenditure") + x.bandwidth()/2).text("Mid-year Cut")
+                .append("tspan").attr("x", x("Expenditure") + x.bandwidth()/2).attr("dy", "1.1em").text("$2.8M");
+        }
+
+        renderLeft();
+        update(false);
+    </script>
+</body>
+</html>
