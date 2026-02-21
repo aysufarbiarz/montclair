@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Montclair Question 2 Impact</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #fdfdfd; padding: 20px; color: #333; line-height: 1.6; }
+        .container { max-width: 950px; margin: 0 auto; }
+        .chart-box { border: 1px solid #eee; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); background: #fff; }
+        .controls { text-align: center; margin-bottom: 25px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #e9ecef; }
+        .toggle-btn { padding: 10px 24px; cursor: pointer; border: 2px solid #2c3e50; background: #fff; color: #2c3e50; font-weight: bold; font-size: 15px; border-radius: 6px; transition: 0.3s; margin: 0 5px; }
+        .toggle-btn:hover { background: #eef2f5; }
+        .active { background: #2c3e50 !important; color: white !important; }
+        h1 { text-align: center; margin-bottom: 5px; font-size: 28px; color: #2c3e50; }
+        p.subtitle { text-align: center; color: #666; margin-bottom: 20px; font-size: 16px; }
+        .unit-note { font-size: 12px; color: #888; text-align: right; margin-bottom: 10px; font-style: italic; }
+        .key-terms { margin-top: 30px; padding: 20px; background: #fff; border-left: 5px solid #2c3e50; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .term-item { margin-bottom: 10px; font-size: 14px; }
+        .term-title { font-weight: bold; color: #2c3e50; }
+        
+        /* D3 Chart Text Styling */
+        .bar-label { font-size: 11px; font-weight: bold; fill: white; text-anchor: middle; }
+        .dark-label { fill: #333; }
+        .gap-label { font-size: 12px; font-weight: bold; fill: #ed7d31; text-anchor: start; }
+        .year-title { font-size: 16px; font-weight: bold; fill: #2c3e50; text-anchor: middle; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Montclair School Budget Projections</h1>
+        <p class="subtitle">Interactive visualization of the Question 2 Referendum</p>
+
+        <div class="controls">
+            <span style="font-weight: bold; margin-right: 15px; font-size: 16px;">Test the scenarios:</span>
+            <button id="btn-current" class="toggle-btn active" onclick="updateChart('current')">Current State</button>
+            <button id="btn-no" class="toggle-btn" onclick="updateChart('no')">If we vote NO</button>
+            <button id="btn-yes" class="toggle-btn" onclick="updateChart('yes')">If we vote YES</button>
+        </div>
+
+        <div class="chart-box">
+            <div class="unit-note">All figures in Millions (M)</div>
+            <div id="dataviz"></div>
+        </div>
+
+        <div class="key-terms">
+            <h3 style="margin-top:0;">Key Terms</h3>
+            <div class="term-item"><span class="term-title">Funding Gap (Orange Arrow):</span> The mechanical deficit between required expenditures and generated revenue.</div>
+            <div class="term-item"><span class="term-title" style="color:#d68910;">Advance of State Aid:</span> A state loan acting as a temporary patch for 2025. Compounds the deficit in 2026 when repayment begins.</div>
+            <div class="term-item"><span class="term-title" style="color:#2980b9;">Tax Levy:</span> A baseline increase to the tax revenue stream. Eliminates the need for loans and stabilizes the 2026 baseline.</div>
+        </div>
+    </div>
+
+    <script>
+        const width = 900, height = 450;
+        const margin = { top: 40, right: 60, bottom: 40, left: 50 };
+        const innerWidth = width - margin.left - margin.right;
+        const innerHeight = height - margin.top - margin.bottom;
+
+        const svg = d3.select("#dataviz").append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        const xYear = d3.scaleBand().domain(["2025-26", "2026-27"]).range([0, innerWidth]).padding(0.1);
+        const xCategory = d3.scaleBand().domain(["Revenue", "Expenditure"]).range([0, xYear.bandwidth()]).padding(0.5);
+        const y = d3.scaleLinear().domain([140, 175]).range([innerHeight, 0]);
+
+        // Axes & Dividers
+        svg.append("g").call(d3.axisLeft(y).ticks(8).tickFormat(d => "$" + d + "M"));
+        svg.append("line").attr("x1", innerWidth/2).attr("y1", -20).attr("x2", innerWidth/2).attr("y2", innerHeight).attr("stroke", "#eee").attr("stroke-width", 2).attr("stroke-dasharray", "5,5");
+           
+        // Title for 2025
+        svg.append("text").attr("class", "year-title").attr("x", xYear("2025-26") + xYear.bandwidth()/2).attr("y", -10).text("Year 1: 2025-26 Impact");
+        svg.append("text").attr("x", xYear("2025-26") + xCategory("Revenue") + xCategory.bandwidth()/2).attr("y", innerHeight + 20).attr("text-anchor", "middle").style("font-size", "12px").text("Revenue");
+        svg.append("text").attr("x", xYear("2025-26") + xCategory("Expenditure") + xCategory.bandwidth()/2).attr("y", innerHeight + 20).attr("text-anchor", "middle").style("font-size", "12px").text("Expenditure");
+
+        // Arrow Defs
+        svg.append("defs").append("marker").attr("id", "arrow").attr("viewBox", "0 0 10 10").attr("refX", 5).attr("refY", 5).attr("markerWidth", 5).attr("markerHeight", 5).attr("orient", "auto")
+           .append("path").attr("d", "M 0 0 L 10 5 L 0 10 z").attr("fill", "#ed7d31");
+
+        // ==========================================
+        // 2025-26 ELEMENTS (Always visible)
+        // ==========================================
+        
+        // Base Revenue ($154.2M)
+        svg.append("rect").attr("x", xYear("2025-26") + xCategory("Revenue")).attr("y", y(154.2)).attr("width", xCategory.bandwidth()).attr("height", innerHeight - y(154.2)).attr("fill", "#4a71be");
+        svg.append("text").attr("class", "bar-label").attr("x", xYear("2025-26") + xCategory("Revenue") + xCategory.bandwidth()/2).attr("y", y(154.2) + 20).text("$154.2M");
+
+        // Base Expenditure ($159.2M Total)
+        svg.append("rect").attr("x", xYear("2025-26") + xCategory("Expenditure")).attr("y", y(156.4)).attr("width", xCategory.bandwidth()).attr("height", innerHeight - y(156.4)).attr("fill", "#54ad66");
+        svg.append("text").attr("class", "bar-label").attr("x", xYear("2025-26") + xCategory("Expenditure") + xCategory.bandwidth()/2).attr("y", y(156.4) + 20).text("$159.2M");
+        svg.append("rect").attr("x", xYear("2025-26") + xCategory("Expenditure")).attr("y", y(159.2)).attr("width", xCategory.bandwidth()).attr("height", y(156.4) - y(159.2)).attr("fill", "#e2efda").attr("stroke", "#333").attr("stroke-dasharray", "4");
+        svg.append("text").attr("class", "bar-label dark-label").attr("x", xYear("2025-26") + xCategory("Expenditure") + xCategory.bandwidth()/2).attr("y", y(159.2) + 14).text("Cut $2.8M");
+
+        // DYNAMIC 2025 Gap Arrow (Shows only in "Current State")
+        const arrowX25 = xYear("2025-26") + xCategory("Revenue") + xCategory.bandwidth() + 15;
+        const arrow25 = svg.append("line").attr("x1", arrowX25).attr("x2", arrowX25).attr("y1", y(154.2)).attr("y2", y(159.2)).attr("stroke", "#ed7d31").attr("stroke-width", 2).attr("marker-start", "url(#arrow)").attr("marker-end", "url(#arrow)");
+        const gapText25_1 = svg.append("text").attr("class", "gap-label").attr("x", arrowX25 + 8).attr("y", y(156.7) - 5).text("$5.0M");
+        const gapText25_2 = svg.append("text").attr("class", "gap-label").attr("x", arrowX25 + 8).attr("y", y(156.7) + 10).text("Gap");
+
+        // DYNAMIC 2025 Top-off Block (Fills the gap in Yes/No)
+        const top25 = svg.append("rect").attr("x", xYear("2025-26") + xCategory("Revenue")).attr("width", xCategory.bandwidth());
+        const top25Text1 = svg.append("text").attr("class", "bar-label dark-label").attr("x", xYear("2025-26") + xCategory("Revenue") + xCategory.bandwidth()/2);
+        const top25Text2 = svg.append("text").attr("class", "bar-label dark-label").attr("x", xYear("2025-26") + xCategory("Revenue") + xCategory.bandwidth()/2);
+
+        // ==========================================
+        // 2026-27 GROUP (Fades out in "Current State")
+        // ==========================================
+        const group26 = svg.append("g").attr("opacity", 0);
+
+        // Titles & Labels
+        group26.append("text").attr("class", "year-title").attr("x", xYear("2026-27") + xYear.bandwidth()/2).attr("y", -10).text("Year 2: 2026-27 Compounded");
+        group26.append("text").attr("x", xYear("2026-27") + xCategory("Revenue") + xCategory.bandwidth()/2).attr("y", innerHeight + 20).attr("text-anchor", "middle").style("font-size", "12px").text("Revenue");
+        group26.append("text").attr("x", xYear("2026-27") + xCategory("Expenditure") + xCategory.bandwidth()/2).attr("y", innerHeight + 20).attr("text-anchor", "middle").style("font-size", "12px").text("Expenditure");
+
+        // 2026 Expenditure ($163.9M Total)
+        group26.append("rect").attr("x", xYear("2026-27") + xCategory("Expenditure")).attr("y", y(163.9)).attr("width", xCategory.bandwidth()).attr("height", innerHeight - y(163.9)).attr("fill", "#54ad66");
+        group26.append("text").attr("class", "bar-label").attr("x", xYear("2026-27") + xCategory("Expenditure") + xCategory.bandwidth()/2).attr("y", y(163.9) + 20).text("$163.9M");
+        group26.append("rect").attr("x", xYear("2026-27") + xCategory("Expenditure")).attr("y", y(167.4)).attr("width", xCategory.bandwidth()).attr("height", y(163.9) - y(167.4)).attr("fill", "#e2efda").attr("stroke", "#333").attr("stroke-dasharray", "4");
+        group26.append("text").attr("class", "bar-label dark-label").attr("x", xYear("2026-27") + xCategory("Expenditure") + xCategory.bandwidth()/2).attr("y", y(167.4) + 14).text("Cut $3.5M");
+
+        // DYNAMIC 2026 Revenue
+        const rev26 = group26.append("rect").attr("x", xYear("2026-27") + xCategory("Revenue")).attr("width", xCategory.bandwidth()).attr("fill", "#4a71be");
+        const rev26Text = group26.append("text").attr("class", "bar-label").attr("x", xYear("2026-27") + xCategory("Revenue") + xCategory.bandwidth()/2);
+
+        // DYNAMIC 2026 Less Aid Box
+        const lessAidBox = group26.append("rect").attr("x", xYear("2026-27") + xCategory("Revenue")).attr("width", xCategory.bandwidth()).attr("fill", "#e8eaf6").attr("stroke", "#333").attr("stroke-dasharray", "4");
+        const lessAidText1 = group26.append("text").attr("class", "bar-label dark-label").attr("x", xYear("2026-27") + xCategory("Revenue") + xCategory.bandwidth()/2).text("Less State Aid");
+        const lessAidText2 = group26.append("text").attr("class", "bar-label dark-label").attr("x", xYear("2026-27") + xCategory("Revenue") + xCategory.bandwidth()/2).text("$1.85M");
+
+        // DYNAMIC 2026 Gap Arrow
+        const arrowX26 = xYear("2026-27") + xCategory("Revenue") + xCategory.bandwidth() + 15;
+        const arrow26 = group26.append("line").attr("x1", arrowX26).attr("x2", arrowX26).attr("stroke", "#ed7d31").attr("stroke-width", 2).attr("marker-start", "url(#arrow)").attr("marker-end", "url(#arrow)");
+        const gapText26_1 = group26.append("text").attr("class", "gap-label").attr("x", arrowX26 + 8);
+        const gapText26_2 = group26.append("text").attr("class", "gap-label").attr("x", arrowX26 + 8).text("Gap");
+
+        // ==========================================
+        // ANIMATION CONTROLLER
+        // ==========================================
+        function updateChart(state) {
+            // Update button styles
+            d3.selectAll(".toggle-btn").classed("active", false);
+            d3.select(`#btn-${state}`).classed("active", true);
+
+            const t = d3.transition().duration(800).ease(d3.easeCubicInOut);
+
+            if (state === 'current') {
+                // Remove 2025 fill, show 2025 gap
+                top25.transition(t).attr("y", y(154.2)).attr("height", 0);
+                top25Text1.transition(t).attr("opacity", 0);
+                top25Text2.transition(t).attr("opacity", 0);
+                
+                arrow25.transition(t).attr("opacity", 1);
+                gapText25_1.transition(t).attr("opacity", 1);
+                gapText25_2.transition(t).attr("opacity", 1);
+
+                // Fade out Year 2 completely
+                group26.transition(t).attr("opacity", 0);
+
+            } else if (state === 'no') {
+                // Fill 2025 gap with Loan (Yellow)
+                top25.transition(t).attr("y", y(159.2)).attr("height", y(154.2) - y(159.2)).attr("fill", "#ffc000");
+                top25Text1.transition(t).attr("y", y(159.2) + 16).text("Advance Aid").attr("opacity", 1);
+                top25Text2.transition(t).attr("y", y(159.2) + 30).text("$5.0M").attr("opacity", 1);
+                
+                arrow25.transition(t).attr("opacity", 0);
+                gapText25_1.transition(t).attr("opacity", 0);
+                gapText25_2.transition(t).attr("opacity", 0);
+
+                // Show Year 2 NO state
+                group26.transition(t).attr("opacity", 1);
+                rev26.transition(t).attr("y", y(153.3)).attr("height", innerHeight - y(153.3));
+                rev26Text.transition(t).attr("y", y(153.3) + 20).text("$153.3M");
+
+                lessAidBox.transition(t).attr("y", y(155.15)).attr("height", y(153.3) - y(155.15)).attr("opacity", 1);
+                lessAidText1.transition(t).attr("y", y(155.15) - 20).attr("opacity", 1);
+                lessAidText2.transition(t).attr("y", y(155.15) - 6).attr("opacity", 1);
+
+                arrow26.transition(t).attr("y1", y(153.3)).attr("y2", y(163.9));
+                gapText26_1.transition(t).attr("y", y(158.6) - 5).text("$10.0M");
+                gapText26_2.transition(t).attr("y", y(158.6) + 10);
+
+            } else if (state === 'yes') {
+                // Fill 2025 gap with Levy (Blue)
+                top25.transition(t).attr("y", y(159.2)).attr("height", y(154.2) - y(159.2)).attr("fill", "#5bace3");
+                top25Text1.transition(t).attr("y", y(159.2) + 16).text("Tax Levy").attr("opacity", 1);
+                top25Text2.transition(t).attr("y", y(159.2) + 30).text("$5.0M").attr("opacity", 1);
+                
+                arrow25.transition(t).attr("opacity", 0);
+                gapText25_1.transition(t).attr("opacity", 0);
+                gapText25_2.transition(t).attr("opacity", 0);
+
+                // Show Year 2 YES state
+                group26.transition(t).attr("opacity", 1);
+                rev26.transition(t).attr("y", y(160.2)).attr("height", innerHeight - y(160.2));
+                rev26Text.transition(t).attr("y", y(160.2) + 20).text("$160.2M");
+
+                lessAidBox.transition(t).attr("y", y(160.2)).attr("height", 0).attr("opacity", 0);
+                lessAidText1.transition(t).attr("y", y(160.2)).attr("opacity", 0);
+                lessAidText2.transition(t).attr("y", y(160.2)).attr("opacity", 0);
+
+                arrow26.transition(t).attr("y1", y(160.2)).attr("y2", y(163.9));
+                gapText26_1.transition(t).attr("y", y(162) - 5).text("$3.7M");
+                gapText26_2.transition(t).attr("y", y(162) + 10);
+            }
+        }
+
+        // Initialize to "Current" state on load
+        updateChart('current');
+    </script>
+</body>
+</html>
