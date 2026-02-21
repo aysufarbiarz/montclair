@@ -8,20 +8,18 @@
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #fff; padding: 20px; color: #333; line-height: 1.6; }
         .container { display: flex; flex-wrap: wrap; gap: 30px; justify-content: center; }
-        .chart-box { border: 1px solid #eee; padding: 20px; width: 520px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .chart-box { border: 1px solid #eee; padding: 20px; width: 520px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); background: #fff; }
         .controls { text-align: center; margin-bottom: 30px; }
         .toggle-btn { padding: 12px 24px; cursor: pointer; border: 1px solid #333; background: #f9f9f9; font-weight: bold; font-size: 16px; border-radius: 4px; transition: 0.2s; }
         .active { background: #333; color: white; }
         h1 { text-align: center; margin-bottom: 5px; }
         p.subtitle { text-align: center; color: #666; margin-bottom: 25px; }
         .unit-note { font-size: 12px; color: #888; text-align: right; margin-bottom: 5px; }
-        
-        /* Key Terms Styling */
         .key-terms { max-width: 1070px; margin: 40px auto; padding: 20px; background: #fdfdfd; border-left: 5px solid #333; border-radius: 4px; }
         .term-item { margin-bottom: 15px; }
         .term-title { font-weight: bold; color: #2c3e50; }
-        .tag-no { color: #d68910; font-weight: bold; } /* Gold color */
-        .tag-yes { color: #2980b9; font-weight: bold; } /* Blue color */
+        .tag-no { color: #d68910; font-weight: bold; }
+        .tag-yes { color: #2980b9; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -51,54 +49,67 @@
     <div class="key-terms">
         <h3>Key Terms & Context</h3>
         <div class="term-item">
-            <span class="term-title">Funding Gap ($5M):</span> The difference between what the schools need to spend to maintain current services ($159.2M) and the expected revenue ($154.2M).
+            <span class="term-title">Funding Gap ($5M):</span> The difference between projected expenditures ($159.2M) and expected revenue ($154.2M).
         </div>
         <div class="term-item">
-            <span class="tag-no">Advance of State Aid (Vote No):</span> This is essentially a **loan** from the State of New Jersey. While it covers the $5M gap now, it must be repaid with interest in future budget cycles, which may lead to further cuts later.
+            <span class="tag-no">Advance of State Aid (Vote No):</span> A loan from the State. It covers the $5M gap now but must be repaid with interest, potentially impacting future budgets.
         </div>
         <div class="term-item">
-            <span class="tag-yes">Tax Levy (Vote Yes):</span> This is a **permanent increase** in the local tax rate. It covers the $5M gap by increasing the baseline revenue, avoiding the need for a state loan and future interest payments.
+            <span class="tag-yes">Tax Levy (Vote Yes):</span> A permanent increase in local tax revenue to cover the $5M gap directly, avoiding loans and interest.
         </div>
         <div class="term-item">
-            <span class="term-title">Mid-year Cuts ($2.8M):</span> These represent potential reductions in staff, programs, or resources that may be required during the school year if the budget is not fully balanced.
+            <span class="term-title">Mid-year Cuts ($2.8M):</span> Reductions required to balance the budget if existing revenue doesn't meet costs.
         </div>
     </div>
 
     <script>
         const data = { rev: 154.2, exp: 159.2, gap: 5.0, cuts: 2.8 };
-        const w = 520, h = 450, margin = {top: 50, right: 80, bottom: 50, left: 60};
+        const w = 520, h = 400, margin = {top: 50, right: 100, bottom: 40, left: 60};
         
         const x = d3.scaleBand().domain(["Revenue", "Expenditure"]).range([margin.left, w - margin.right]).padding(0.4);
-        const y = d3.scaleLinear().domain([140, 170]).range([h - margin.bottom, margin.top]);
+        const y = d3.scaleLinear().domain([140, 175]).range([h - margin.bottom, margin.top]);
 
-        function drawBase(selector) {
-            const svg = d3.select(selector).append("svg").attr("width", w).attr("height", h);
-            svg.append("g").attr("transform", `translate(${margin.left},0)`).call(d3.axisLeft(y).ticks(6).tickFormat(d => "$" + d + "M"));
-            svg.append("g").attr("transform", `translate(0,${h - margin.bottom})`).call(d3.axisBottom(x));
-            
-            svg.append("defs").append("marker")
-                .attr("id", "arrow").attr("viewBox", "0 0 10 10").attr("refX", 5).attr("refY", 5)
-                .attr("markerWidth", 4).attr("markerHeight", 4).attr("orient", "auto")
-                .append("path").attr("d", "M 0 0 L 10 5 L 0 10 z").attr("fill", "#ed7d31");
+        let svgLeft, svgRight;
+
+        function init() {
+            svgLeft = d3.select("#as-is").append("svg").attr("width", w).attr("height", h);
+            svgRight = d3.select("#comparison").append("svg").attr("width", w).attr("height", h);
+
+            [svgLeft, svgRight].forEach(svg => {
+                svg.append("g").attr("transform", `translate(${margin.left},0)`).call(d3.axisLeft(y).ticks(6).tickFormat(d => "$" + d + "M"));
+                svg.append("g").attr("transform", `translate(0,${h - margin.bottom})`).call(d3.axisBottom(x));
                 
-            return svg;
+                svg.append("defs").append("marker")
+                    .attr("id", "arrow").attr("viewBox", "0 0 10 10").attr("refX", 5).attr("refY", 5)
+                    .attr("markerWidth", 4).attr("markerHeight", 4).attr("orient", "auto")
+                    .append("path").attr("d", "M 0 0 L 10 5 L 0 10 z").attr("fill", "#ed7d31");
+            });
+
+            renderStatic();
+            update(false);
         }
 
-        const svgLeft = drawBase("#as-is");
-        const svgRight = drawBase("#comparison");
-
-        function renderLeft() {
-            svgLeft.append("rect").attr("x", x("Revenue")).attr("y", y(data.rev)).attr("width", x.bandwidth()).attr("height", y(140) - y(data.rev)).attr("fill", "#4a71be");
-            svgLeft.append("rect").attr("x", x("Expenditure")).attr("y", y(data.exp)).attr("width", x.bandwidth()).attr("height", y(140) - y(data.exp)).attr("fill", "#54ad66");
+        function renderStatic() {
+            // Main Bars
+            svgLeft.append("rect").attr("x", x("Revenue")).attr("y", y(data.rev)).attr("width", x.bandwidth()).attr("height", (h - margin.bottom) - y(data.rev)).attr("fill", "#4a71be");
+            svgLeft.append("rect").attr("x", x("Expenditure")).attr("y", y(data.exp - data.cuts)).attr("width", x.bandwidth()).attr("height", (h - margin.bottom) - y(data.exp - data.cuts)).attr("fill", "#54ad66");
             
-            svgLeft.append("text").attr("x", x("Revenue") + x.bandwidth()/2).attr("y", y(data.rev) + 20).attr("text-anchor", "middle").attr("fill", "white").style("font-size", "12px").text(`$${data.rev}M`);
-            svgLeft.append("text").attr("x", x("Expenditure") + x.bandwidth()/2).attr("y", y(data.exp) + 20).attr("text-anchor", "middle").attr("fill", "white").style("font-size", "12px").text(`$${data.exp}M`);
-
-            const gapX = x("Revenue") + x.bandwidth() + 15;
-            svgLeft.append("line").attr("x1", gapX).attr("y1", y(data.rev)).attr("x2", gapX).attr("y2", y(data.exp))
-                .attr("stroke", "#ed7d31").attr("stroke-width", 2).attr("marker-start", "url(#arrow)").attr("marker-end", "url(#arrow)");
+            // Restoring the Dashed Box on Static Chart
+            svgLeft.append("rect").attr("x", x("Expenditure")).attr("y", y(data.exp)).attr("width", x.bandwidth()).attr("height", y(data.exp - data.cuts) - y(data.exp)).attr("fill", "#e2efda").attr("stroke", "#333").attr("stroke-dasharray", "4");
             
-            svgLeft.append("text").attr("x", gapX + 5).attr("y", y((data.rev + data.exp)/2)).attr("fill", "#ed7d31").style("font-weight", "bold").style("font-size", "14px").text(`$${data.gap}M Funding Gap`);
+            // Labels
+            svgLeft.append("text").attr("x", x("Revenue") + x.bandwidth()/2).attr("y", y(data.rev) + 15).attr("text-anchor", "middle").attr("fill", "white").style("font-size", "11px").text(`$${data.rev}M`);
+            svgLeft.append("text").attr("x", x("Expenditure") + x.bandwidth()/2).attr("y", y(data.exp - data.cuts) + 15).attr("text-anchor", "middle").attr("fill", "white").style("font-size", "11px").text(`$${data.exp - data.cuts}M`);
+
+            // Dashed box text
+            const cutTxt = svgLeft.append("text").attr("x", x("Expenditure") + x.bandwidth()/2).attr("y", y(data.exp) + 12).attr("text-anchor", "middle").style("font-size", "9px").style("font-weight", "bold");
+            cutTxt.append("tspan").attr("x", x("Expenditure") + x.bandwidth()/2).text("Mid-year Cut");
+            cutTxt.append("tspan").attr("x", x("Expenditure") + x.bandwidth()/2).attr("dy", "1em").text(`$${data.cuts}M`);
+
+            // Gap Arrow - Moved label to the RIGHT
+            const gapX = x("Revenue") + x.bandwidth() + 10;
+            svgLeft.append("line").attr("x1", gapX).attr("y1", y(data.rev)).attr("x2", gapX).attr("y2", y(data.exp)).attr("stroke", "#ed7d31").attr("stroke-width", 2).attr("marker-start", "url(#arrow)").attr("marker-end", "url(#arrow)");
+            svgLeft.append("text").attr("x", gapX + 8).attr("y", y((data.rev + data.exp)/2) + 5).attr("fill", "#ed7d31").style("font-weight", "bold").style("font-size", "12px").text(`$${data.gap}M Gap`);
         }
 
         function update(isYes) {
@@ -109,27 +120,26 @@
             svgRight.selectAll(".dynamic-content").remove();
             const group = svgRight.append("g").attr("class", "dynamic-content");
 
-            group.append("rect").attr("x", x("Revenue")).attr("y", y(data.rev)).attr("width", x.bandwidth()).attr("height", y(140) - y(data.rev)).attr("fill", "#4a71be");
+            // Revenue
+            group.append("rect").attr("x", x("Revenue")).attr("y", y(data.rev)).attr("width", x.bandwidth()).attr("height", (h - margin.bottom) - y(data.rev)).attr("fill", "#4a71be");
+            group.append("rect").attr("x", x("Revenue")).attr("y", y(data.rev + 5)).attr("width", x.bandwidth()).attr("height", y(data.rev) - y(data.rev + 5)).attr("fill", isYes ? "#5bace3" : "#ffc000");
             
-            const topFill = isYes ? "#5bace3" : "#ffc000";
-            group.append("rect").attr("x", x("Revenue")).attr("y", y(data.rev + 5)).attr("width", x.bandwidth()).attr("height", y(data.rev) - y(data.rev+5)).attr("fill", topFill);
-            
-            const label = isYes ? "Tax Levy" : "Advance Aid";
-            group.append("text").attr("x", x("Revenue") + x.bandwidth()/2).attr("y", y(data.rev + 4)).attr("text-anchor", "middle").style("font-size", "11px").style("font-weight", "bold")
-                .append("tspan").attr("x", x("Revenue") + x.bandwidth()/2).text(label)
-                .append("tspan").attr("x", x("Revenue") + x.bandwidth()/2).attr("dy", "1.2em").text("$5M");
+            const label = group.append("text").attr("x", x("Revenue") + x.bandwidth()/2).attr("y", y(data.rev + 4.2)).attr("text-anchor", "middle").style("font-size", "10px").style("font-weight", "bold");
+            label.append("tspan").attr("x", x("Revenue") + x.bandwidth()/2).text(isYes ? "Tax Levy" : "Advance Aid");
+            label.append("tspan").attr("x", x("Revenue") + x.bandwidth()/2).attr("dy", "1.1em").text("$5M");
 
-            group.append("rect").attr("x", x("Expenditure")).attr("y", y(data.exp)).attr("width", x.bandwidth()).attr("height", y(140) - y(data.exp)).attr("fill", "#54ad66");
+            // Expenditure
+            group.append("rect").attr("x", x("Expenditure")).attr("y", y(data.exp - data.cuts)).attr("width", x.bandwidth()).attr("height", (h - margin.bottom) - y(data.exp - data.cuts)).attr("fill", "#54ad66");
             
-            group.append("rect").attr("x", x("Expenditure")).attr("y", y(data.exp + 2.8)).attr("width", x.bandwidth()).attr("height", y(y(140)) - y(data.exp)).attr("fill", "#e2efda").attr("stroke", "#000").attr("stroke-dasharray", "3");
+            // The restored dashed box
+            group.append("rect").attr("x", x("Expenditure")).attr("y", y(data.exp)).attr("width", x.bandwidth()).attr("height", y(data.exp - data.cuts) - y(data.exp)).attr("fill", "#e2efda").attr("stroke", "#333").attr("stroke-dasharray", "4");
             
-            group.append("text").attr("x", x("Expenditure") + x.bandwidth()/2).attr("y", y(data.exp + 2.2)).attr("text-anchor", "middle").style("font-size", "10px").style("font-weight", "bold")
-                .append("tspan").attr("x", x("Expenditure") + x.bandwidth()/2).text("Mid-year Cut")
-                .append("tspan").attr("x", x("Expenditure") + x.bandwidth()/2).attr("dy", "1.1em").text("$2.8M");
+            const cutLabel = group.append("text").attr("x", x("Expenditure") + x.bandwidth()/2).attr("y", y(data.exp) + 12).attr("text-anchor", "middle").style("font-size", "9px").style("font-weight", "bold");
+            cutLabel.append("tspan").attr("x", x("Expenditure") + x.bandwidth()/2).text("Mid-year Cut");
+            cutLabel.append("tspan").attr("x", x("Expenditure") + x.bandwidth()/2).attr("dy", "1.1em").text(`$${data.cuts}M`);
         }
 
-        renderLeft();
-        update(false);
+        window.onload = init;
     </script>
 </body>
 </html>
