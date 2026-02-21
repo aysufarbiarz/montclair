@@ -151,10 +151,10 @@
 
             // --- CHART 3: 2026-27 ---
             if (!isYes) {
-                g26.append("rect").attr("x", x("Revenue")).attr("y", y(153.3)).attr("width", x.bandwidth()).attr("height", y(140) - y(153.3)).attr("fill", "#4a71be");
-                addText(g26, x("Revenue") + x.bandwidth()/2, y(153.3) + 20, "$153.3M", null, "white", "11px");
+                g26.append("rect").attr("x", x("Revenue")).attr("y", y(155.2)).attr("width", x.bandwidth()).attr("height", y(140) - y(155.2)).attr("fill", "#4a71be");
+                addText(g26, x("Revenue") + x.bandwidth()/2, y(155.2) + 20, "$155.2M", null, "white", "11px");
 
-                g26.append("rect").attr("x", x("Revenue")).attr("y", y(155.15)).attr("width", x.bandwidth()).attr("height", y(153.3) - y(155.15)).attr("fill", "#e8eaf6").attr("stroke", "#333").attr("stroke-dasharray", "4");
+                g26.append("rect").attr("x", x("Revenue")).attr("y", y(155.15)).attr("width", x.bandwidth()).attr("height", y(155.2) - y(155.15)).attr("fill", "#e8eaf6").attr("stroke", "#333").attr("stroke-dasharray", "4");
                 
                 // FLOATING TEXT for Less State Aid to avoid overlap
                 addText(g26, x("Revenue") + x.bandwidth()/2, y(155.15) - 22, "Less State Aid", "$1.85M", "#333", "10px");
@@ -165,7 +165,7 @@
                 g26.append("rect").attr("x", x("Expenditure")).attr("y", y(167.4)).attr("width", x.bandwidth()).attr("height", y(163.9) - y(167.4)).attr("fill", "#e2efda").attr("stroke", "#333").attr("stroke-dasharray", "4");
                 addText(g26, x("Expenditure") + x.bandwidth()/2, y(167.4) + 14, "Mid Year Cut", "Annualized $3.5M", "#333", "9px");
 
-                drawArrow(g26, x("Revenue") + x.bandwidth(), y(153.3), y(163.9), "$10.0M", "Gap");
+                drawArrow(g26, x("Revenue") + x.bandwidth(), y(155.2), y(163.9), "$10.0M", "Gap");
 
             } else {
                 g26.append("rect").attr("x", x("Revenue")).attr("y", y(160.2)).attr("width", x.bandwidth()).attr("height", y(140) - y(160.2)).attr("fill", "#4a71be");
