@@ -86,10 +86,10 @@
             svg.append("text").attr("class", "axis-text").attr("x", x0(year) + x0.bandwidth()/2).attr("y", innerHeight + 30).attr("text-anchor", "middle").text(year);
         });
 
-        // Bottom text regarding committed cuts
-        svg.append("text").attr("class", "cut-text").attr("x", x0("Year 1: 2025-26") + x0.bandwidth()/2).attr("y", innerHeight + 55).text("These balances are over and above").append("tspan").attr("x", x0("Year 1: 2025-26") + x0.bandwidth()/2).attr("dy", "1.2em").text("the $2.8M committed cuts.");
+        // Bottom text regarding midyear cuts
+        svg.append("text").attr("class", "cut-text").attr("x", x0("Year 1: 2025-26") + x0.bandwidth()/2).attr("y", innerHeight + 55).text("These balances are over and above").append("tspan").attr("x", x0("Year 1: 2025-26") + x0.bandwidth()/2).attr("dy", "1.2em").text("the $2.8M mid-year cuts.");
         
-        svg.append("text").attr("class", "cut-text").attr("x", x0("Year 2: 2026-27") + x0.bandwidth()/2).attr("y", innerHeight + 55).text("Both budget deficits are over and above").append("tspan").attr("x", x0("Year 2: 2026-27") + x0.bandwidth()/2).attr("dy", "1.2em").text("the $3.5M committed cuts.");
+        svg.append("text").attr("class", "cut-text").attr("x", x0("Year 2: 2026-27") + x0.bandwidth()/2).attr("y", innerHeight + 55).text("Both budget deficits are over and above").append("tspan").attr("x", x0("Year 2: 2026-27") + x0.bandwidth()/2).attr("dy", "1.2em").text("the $3.5M mid-year cuts.");
 
         // --- DRAW THE BARS & ANNOTATIONS ---
         
