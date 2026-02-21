@@ -80,6 +80,13 @@
         // Balanced Budget label safely in the center
         svg.append("text").attr("class", "zero-label").attr("x", innerWidth / 2).attr("y", zeroY - 8).attr("text-anchor", "middle").text("Balanced Budget ($0)");
 
+        // Bottom text regarding committed cuts (Centered across the whole chart)
+        svg.append("text")
+            .attr("class", "cut-text")
+            .attr("x", innerWidth / 2)
+            .attr("y", innerHeight + 60)
+            .attr("text-anchor", "middle")
+            .text("*Both impacts already reflect the $2.8M cut from January ($3.5M when in effect for a full year).");
         // Add Year Labels
         const years = ["Year 1: 2025-26", "Year 2: 2026-27"];
         years.forEach(year => {
