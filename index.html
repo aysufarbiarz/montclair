@@ -73,8 +73,8 @@
     <script>
         const w = 380, h = 420, margin = {top: 50, right: 40, bottom: 40, left: 50};
         
-        // Padding at 0.55 makes bars narrower and the gap between them wider
-        const x = d3.scaleBand().domain(["Revenue", "Expenditure"]).range([margin.left, w - margin.right]).padding(0.55);
+        // Padding at 0.65 makes bars narrower and the gap between them wider
+        const x = d3.scaleBand().domain(["Revenue", "Expenditure"]).range([margin.left, w - margin.right]).padding(0.65);
         const y = d3.scaleLinear().domain([140, 175]).range([h - margin.bottom, margin.top]);
 
         let svgLeft, svg25, svg26AsIs, svg26;
@@ -85,18 +85,19 @@
             if(line2) txt.append("tspan").attr("x", cx).attr("dy", "1.2em").text(line2);
         }
 
-        // Dedicated function to draw the gap arrow in the empty space
-        function drawArrow(group, xRightEdge, y1, y2, label1, label2) {
-            const arrowX = xRightEdge + 15; 
+        // Dedicated function to draw the gap arrow in the empty space - updating this to add a third line
+        function drawArrow(group, xRightEdge, y1, y2, label1, label2, label3) {
+            const arrowX = xRightEdge + 12; 
             
             group.append("line").attr("x1", arrowX).attr("y1", y1).attr("x2", arrowX).attr("y2", y2)
                  .attr("stroke", "#ed7d31").attr("stroke-width", 2).attr("marker-start", "url(#arrow)").attr("marker-end", "url(#arrow)");
             
             // Text is anchored to the "start" (left) so it pushes out into the empty gap space
-            const txt = group.append("text").attr("x", arrowX + 8).attr("y", (y1 + y2)/2 - 5)
+            const txt = group.append("text").attr("x", arrowX + 6).attr("y", (y1 + y2)/2 - 10)
                              .attr("fill", "#ed7d31").style("font-weight", "bold").style("font-size", "11px").attr("text-anchor", "start");
-            txt.append("tspan").attr("x", arrowX + 8).text(label1);
-            if(label2) txt.append("tspan").attr("x", arrowX + 8).attr("dy", "1.3em").text(label2);
+            txt.append("tspan").attr("x", arrowX + 6).text(label1);
+            if(label2) txt.append("tspan").attr("x", arrowX + 6).attr("dy", "1.3em").text(label2);
+            if(label3) txt.append("tspan").attr("x", arrowX + 6).attr("dy", "1.3em").text(label3);
         }
 
         function init() {
@@ -133,8 +134,8 @@
             addText(svgLeft, x("Expenditure") + x.bandwidth()/2, y(162.0) + 14, "Mid-year Cut", "$2.8M", "#333", "10px");
 
             // Fixed Arrow: Stops cleanly at 159.2 base
-            drawArrow(svgLeft, x("Revenue") + x.bandwidth(), y(154.2), y(159.2), "$5M", "Cuts", "Needed");
-
+            drawArrow(svgLeft, x("Revenue") + x.bandwidth(), y(154.2), y(159.2), "$5.0M", "Cuts", "Needed");
+            
             // --- 2. Current State (2026-27 As is) ---
             svg26AsIs.append("rect").attr("x", x("Revenue")).attr("y", y(155.2)).attr("width", x.bandwidth()).attr("height", y(140) - y(155.2)).attr("fill", "#4a71be");
             addText(svg26AsIs, x("Revenue") + x.bandwidth()/2, y(155.2) + 20, "$155.2M", null, "white", "11px");
@@ -146,8 +147,8 @@
             addText(svg26AsIs, x("Expenditure") + x.bandwidth()/2, y(167.4) + 14, "Mid Year Cuts", "Annualized $3.5M", "#333", "9px");
 
             // Arrow: Stops cleanly at 163.9 base
-            drawArrow(svg26AsIs, x("Revenue") + x.bandwidth(), y(155.2), y(163.9), "$8.7M", "Cuts Needed");
-        }
+
+            drawArrow(svg26AsIs, x("Revenue") + x.bandwidth(), y(155.2), y(163.9), "$8.7M", "Cuts", "Needed");        }
 
         function update(isYes) {
             d3.select("#no-btn").classed("active", !isYes);
@@ -191,8 +192,7 @@
                 g26.append("rect").attr("x", x("Expenditure")).attr("y", y(167.4)).attr("width", x.bandwidth()).attr("height", y(163.9) - y(167.4)).attr("fill", "#e2efda").attr("stroke", "#333").attr("stroke-dasharray", "4");
                 addText(g26, x("Expenditure") + x.bandwidth()/2, y(167.4) + 14, "Mid Year Cut", "Annualized $3.5M", "#333", "9px");
 
-                drawArrow(g26, x("Revenue") + x.bandwidth(), y(153.3), y(163.9), "$10M", "Cuts Needed");
-
+                drawArrow(g26, x("Revenue") + x.bandwidth(), y(153.3), y(163.9), "$10M", "Cuts", "Needed");
             } else {
                 g26.append("rect").attr("x", x("Revenue")).attr("y", y(160.2)).attr("width", x.bandwidth()).attr("height", y(140) - y(160.2)).attr("fill", "#4a71be");
                 addText(g26, x("Revenue") + x.bandwidth()/2, y(160.2) + 20, "$160.2M", null, "white", "11px");
@@ -203,7 +203,8 @@
                 g26.append("rect").attr("x", x("Expenditure")).attr("y", y(167.4)).attr("width", x.bandwidth()).attr("height", y(163.9) - y(167.4)).attr("fill", "#e2efda").attr("stroke", "#333").attr("stroke-dasharray", "4");
                 addText(g26, x("Expenditure") + x.bandwidth()/2, y(167.4) + 14, "Mid Year Cut", "Annualized $3.5M", "#333", "9px");
 
-                drawArrow(g26, x("Revenue") + x.bandwidth(), y(160.2), y(163.9), "$3.7M", "Cuts Needed");
+
+            drawArrow(g26, x("Revenue") + x.bandwidth(), y(160.2), y(163.9), "$3.7M", "Cuts", "Needed");
             }
         }
 
