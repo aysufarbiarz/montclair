@@ -38,7 +38,7 @@
         .tax-table tr:last-child td { border-bottom: none; }
         .table-title { font-weight: bold; font-size: 16px; margin-bottom: 10px; color: #2c3e50; text-align: center; }
 
-        /* Mobile specific adjustments to ensure stacking when screen gets too small */
+        /* Mobile specific adjustments */
         @media (max-width: 768px) {
             .chart-box, .tax-table-wrapper { width: 100%; }
             .control-label { text-align: center; width: 100%; margin-bottom: 5px; }
@@ -118,19 +118,19 @@
         let currentQ1 = 'asis';
         let currentQ2 = 'asis';
 
-        // 3x3 Matrix defining the 9 possible outcomes for 2026-27 (Hardcoded exact strings to preserve fidelity)
+        // Updated matrix: Rounded State Aid to 1.3, verified Monitor = 0 for yes-yes.
         const scenarios26 = {
-            'asis-asis': { revTop: 155.3, revSolid: 155.3, revText: "155.3", stateAidLoss: 0, stateAidText: "", expBase: 163.8, monitor: 0, interest: 0, intText: "", gapText: "$8.8M" },
-            'no-asis':   { revTop: 155.3, revSolid: 155.3, revText: "155.3", stateAidLoss: 0, stateAidText: "", expBase: 163.8, monitor: 0, interest: 0, intText: "", gapText: "$8.8M" }, 
-            'yes-asis':  { revTop: 155.3, revSolid: 155.3, revText: "155.3", stateAidLoss: 0, stateAidText: "", expBase: 163.8, monitor: 0, interest: 0.252, intText: "$252k", gapText: "$9.0M" }, 
+            'asis-asis': { revTop: 155.3, revSolid: 155.3, stateAidLoss: 0, stateAidText: "", expBase: 163.8, monitor: 0, interest: 0, intText: "", gapText: "$8.8M" },
+            'no-asis':   { revTop: 155.3, revSolid: 155.3, stateAidLoss: 0, stateAidText: "", expBase: 163.8, monitor: 0, interest: 0, intText: "", gapText: "$8.8M" }, 
+            'yes-asis':  { revTop: 155.3, revSolid: 155.3, stateAidLoss: 0, stateAidText: "", expBase: 163.8, monitor: 0, interest: 0.252, intText: "$252k", gapText: "$9.0M" }, 
             
-            'asis-no':   { revTop: 155.3, revSolid: 153.5, revText: "153.5", stateAidLoss: 1.8, stateAidText: "$1.8M", expBase: 163.8, monitor: 0.15, interest: 0, intText: "", gapText: "$10.4M" },
-            'no-no':     { revTop: 155.3, revSolid: 153.5, revText: "153.5", stateAidLoss: 1.8, stateAidText: "$1.8M", expBase: 163.8, monitor: 0.15, interest: 0, intText: "", gapText: "$10.4M" },
-            'yes-no':    { revTop: 155.3, revSolid: 154.8, revText: "154.8", stateAidLoss: 0.5, stateAidText: "$500k", expBase: 163.8, monitor: 0.15, interest: 0.252, intText: "$252k", gapText: "$9.4M" },
+            'asis-no':   { revTop: 155.3, revSolid: 153.5, stateAidLoss: 1.8, stateAidText: "$1.8M", expBase: 163.8, monitor: 0.15, interest: 0, intText: "", gapText: "$10.4M" },
+            'no-no':     { revTop: 155.3, revSolid: 153.5, stateAidLoss: 1.8, stateAidText: "$1.8M", expBase: 163.8, monitor: 0.15, interest: 0, intText: "", gapText: "$10.4M" },
+            'yes-no':    { revTop: 155.3, revSolid: 154.8, stateAidLoss: 0.5, stateAidText: "$500k", expBase: 163.8, monitor: 0.15, interest: 0.252, intText: "$252k", gapText: "$9.4M" },
             
-            'asis-yes':  { revTop: 160.4, revSolid: 159.1, revText: "159.1", stateAidLoss: 1.27, stateAidText: "$1.27M", expBase: 163.8, monitor: 0.15, interest: 0.1, intText: "$100k", gapText: "$4.9M" }, 
-            'no-yes':    { revTop: 160.4, revSolid: 159.1, revText: "159.1", stateAidLoss: 1.27, stateAidText: "$1.27M", expBase: 163.8, monitor: 0.15, interest: 0.1, intText: "$100k", gapText: "$4.9M" },
-            'yes-yes':   { revTop: 160.4, revSolid: 160.4, revText: "160.4", stateAidLoss: 0, stateAidText: "", expBase: 163.8, monitor: 0, interest: 0.35, intText: "$350k", gapText: "$3.7M" }
+            'asis-yes':  { revTop: 160.4, revSolid: 159.1, stateAidLoss: 1.3, stateAidText: "$1.3M", expBase: 163.8, monitor: 0.15, interest: 0.1, intText: "$100k", gapText: "$4.9M" }, 
+            'no-yes':    { revTop: 160.4, revSolid: 159.1, stateAidLoss: 1.3, stateAidText: "$1.3M", expBase: 163.8, monitor: 0.15, interest: 0.1, intText: "$100k", gapText: "$4.9M" },
+            'yes-yes':   { revTop: 160.4, revSolid: 160.4, stateAidLoss: 0, stateAidText: "", expBase: 163.8, monitor: 0, interest: 0.35, intText: "$350k", gapText: "$3.7M" }
         };
 
         function addText(group, cx, cy, line1, line2, color, size) {
@@ -217,10 +217,19 @@
             // ==========================================
             const s26 = scenarios26[`${q1}-${q2}`];
             
-            // Revenue Block
-            g26.append("rect").attr("x", x("Revenue")).attr("y", y(s26.revSolid)).attr("width", x.bandwidth()).attr("height", y(140) - y(s26.revSolid)).attr("fill", "#4a71be");
-            addText(g26, x("Revenue") + x.bandwidth()/2, y(s26.revSolid) + 20, "$" + s26.revText + "M", null, "white", "11px");
+            // 1. BASE REVENUE BLOCK (Caps at 155.3 baseline)
+            const baseRevEnd = Math.min(155.3, s26.revSolid);
+            g26.append("rect").attr("x", x("Revenue")).attr("y", y(baseRevEnd)).attr("width", x.bandwidth()).attr("height", y(140) - y(baseRevEnd)).attr("fill", "#4a71be");
+            addText(g26, x("Revenue") + x.bandwidth()/2, y(baseRevEnd) + 20, "$" + baseRevEnd.toFixed(1) + "M", null, "white", "11px");
 
+            // 2. TAX LEVY BLOCK (Draws only if solid revenue is higher than 155.3)
+            if (s26.revSolid > 155.3) {
+                g26.append("rect").attr("x", x("Revenue")).attr("y", y(s26.revSolid)).attr("width", x.bandwidth()).attr("height", y(155.3) - y(s26.revSolid)).attr("fill", "#5bace3");
+                const taxLevyAmount = (s26.revSolid - 155.3).toFixed(1);
+                addText(g26, x("Revenue") + x.bandwidth()/2, y(s26.revSolid) + 16, "Tax Levy", "$" + taxLevyAmount + "M", "#333", "10px");
+            }
+
+            // 3. STATE AID LOSS (Dashed box floating on top)
             if (s26.stateAidLoss > 0) {
                 g26.append("rect").attr("x", x("Revenue")).attr("y", y(s26.revTop)).attr("width", x.bandwidth()).attr("height", y(s26.revSolid) - y(s26.revTop)).attr("fill", "#e8eaf6").attr("stroke", "#333").attr("stroke-dasharray", "4");
                 addText(g26, x("Revenue") + x.bandwidth()/2, y(s26.revTop) - 22, "Less State Aid", s26.stateAidText, "#333", "10px");
@@ -235,19 +244,22 @@
             const cutTop = interestTop + 3.5;
             const ax = x("Expenditure") + x.bandwidth();
 
-            // Monitor Box & Callout
+            // Monitor Box & Callout (Fixed Overlap Issue)
             if (s26.monitor > 0) {
                 g26.append("rect").attr("x", x("Expenditure")).attr("y", y(monitorTop)).attr("width", x.bandwidth()).attr("height", y(s26.expBase) - y(monitorTop)).attr("fill", "#e6c229").attr("stroke", "#333");
-                g26.append("line").attr("x1", ax).attr("y1", y(s26.expBase)).attr("x2", ax + 12).attr("y2", y(s26.expBase) - 15).attr("stroke", "#e6c229").attr("stroke-width", 2);
-                addText(g26, ax + 35, y(s26.expBase) - 20, "Monitor", "$150k", "#333", "10px");
+                g26.append("line").attr("x1", ax).attr("y1", y(s26.expBase)).attr("x2", ax + 12).attr("y2", y(s26.expBase) - 10).attr("stroke", "#e6c229").attr("stroke-width", 2);
+                addText(g26, ax + 35, y(s26.expBase) - 15, "Monitor", "$150k", "#333", "10px");
             }
 
-            // Interest Box & Callout
+            // Interest Box & Callout (Fixed Overlap Issue by stretching line higher)
             if (s26.interest > 0) {
                 g26.append("rect").attr("x", x("Expenditure")).attr("y", y(interestTop)).attr("width", x.bandwidth()).attr("height", y(monitorTop) - y(interestTop)).attr("fill", "#f17105").attr("stroke", "#333");
-                const yShift = s26.monitor > 0 ? y(monitorTop) - 35 : y(monitorTop) - 15;
-                g26.append("line").attr("x1", ax).attr("y1", y(monitorTop)).attr("x2", ax + 12).attr("y2", yShift + 5).attr("stroke", "#f17105").attr("stroke-width", 2);
-                addText(g26, ax + 35, yShift, "Interest", s26.intText, "#333", "10px");
+                
+                // Pushes the Interest label significantly higher up so it doesn't crash into Monitor text
+                const lineEndY = s26.monitor > 0 ? y(monitorTop) - 45 : y(monitorTop) - 20;
+                
+                g26.append("line").attr("x1", ax).attr("y1", y(monitorTop)).attr("x2", ax + 12).attr("y2", lineEndY + 5).attr("stroke", "#f17105").attr("stroke-width", 2);
+                addText(g26, ax + 35, lineEndY, "Interest", s26.intText, "#333", "10px");
             }
 
             // Mid-year cuts
