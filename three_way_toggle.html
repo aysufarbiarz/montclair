@@ -118,7 +118,7 @@
         let currentQ1 = 'asis';
         let currentQ2 = 'asis';
 
-        // Updated matrix: Rounded State Aid to 1.3, verified Monitor = 0 for yes-yes.
+        // 3x3 Matrix defining the 9 possible outcomes for 2026-27 (Rounded precisely to match PR and BOE Docs)
         const scenarios26 = {
             'asis-asis': { revTop: 155.3, revSolid: 155.3, stateAidLoss: 0, stateAidText: "", expBase: 163.8, monitor: 0, interest: 0, intText: "", gapText: "$8.8M" },
             'no-asis':   { revTop: 155.3, revSolid: 155.3, stateAidLoss: 0, stateAidText: "", expBase: 163.8, monitor: 0, interest: 0, intText: "", gapText: "$8.8M" }, 
@@ -222,7 +222,7 @@
             g26.append("rect").attr("x", x("Revenue")).attr("y", y(baseRevEnd)).attr("width", x.bandwidth()).attr("height", y(140) - y(baseRevEnd)).attr("fill", "#4a71be");
             addText(g26, x("Revenue") + x.bandwidth()/2, y(baseRevEnd) + 20, "$" + baseRevEnd.toFixed(1) + "M", null, "white", "11px");
 
-            // 2. TAX LEVY BLOCK (Draws only if solid revenue is higher than 155.3)
+            // 2. TAX LEVY BLOCK (Draws only if solid revenue is higher than 155.3 baseline)
             if (s26.revSolid > 155.3) {
                 g26.append("rect").attr("x", x("Revenue")).attr("y", y(s26.revSolid)).attr("width", x.bandwidth()).attr("height", y(155.3) - y(s26.revSolid)).attr("fill", "#5bace3");
                 const taxLevyAmount = (s26.revSolid - 155.3).toFixed(1);
@@ -254,10 +254,7 @@
             // Interest Box & Callout (Fixed Overlap Issue by stretching line higher)
             if (s26.interest > 0) {
                 g26.append("rect").attr("x", x("Expenditure")).attr("y", y(interestTop)).attr("width", x.bandwidth()).attr("height", y(monitorTop) - y(interestTop)).attr("fill", "#f17105").attr("stroke", "#333");
-                
-                // Pushes the Interest label significantly higher up so it doesn't crash into Monitor text
                 const lineEndY = s26.monitor > 0 ? y(monitorTop) - 45 : y(monitorTop) - 20;
-                
                 g26.append("line").attr("x1", ax).attr("y1", y(monitorTop)).attr("x2", ax + 12).attr("y2", lineEndY + 5).attr("stroke", "#f17105").attr("stroke-width", 2);
                 addText(g26, ax + 35, lineEndY, "Interest", s26.intText, "#333", "10px");
             }
