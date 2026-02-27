@@ -8,12 +8,13 @@
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #fdfdfd; padding: 20px; color: #333; line-height: 1.6; }
         
-        .container { display: flex; flex-wrap: wrap; gap: 30px; justify-content: center; max-width: 1050px; margin: 0 auto; }
-        .chart-box { border: 1px solid #eee; padding: 15px; width: 460px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); background: #fff; }
+        /* Fluid flex layout to force side-by-side on narrow desktop sites, but stack on mobile */
+        .container { display: flex; flex-wrap: wrap; justify-content: space-between; max-width: 1050px; margin: 0 auto; }
+        .chart-box { width: 49%; min-width: 320px; box-sizing: border-box; border: 1px solid #eee; padding: 15px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); background: #fff; margin-bottom: 20px; }
         
         .controls { text-align: center; margin-bottom: 25px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); max-width: 700px; margin-left: auto; margin-right: auto; }
         .control-group { margin: 15px 0; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px; }
-        .control-label { font-weight: bold; margin-right: 15px; font-size: 16px; color: #2c3e50; min-width: 200px; text-align: right; }
+        .control-label { font-weight: bold; margin-right: 10px; font-size: 16px; color: #2c3e50; min-width: 110px; text-align: right; }
         .toggle-btn { padding: 10px 20px; cursor: pointer; border: 2px solid #333; background: #fff; color: #333; font-weight: bold; font-size: 14px; border-radius: 6px; transition: 0.2s; }
         .active { background: #333; color: white; }
         
@@ -22,21 +23,24 @@
         .unit-note { font-size: 11px; color: #888; text-align: right; margin-bottom: 10px; font-style: italic; }
         .chart-title { text-align: center; font-weight: bold; font-size: 16px; margin-bottom: 5px; color: #2c3e50; }
         
-        .key-terms { max-width: 950px; margin: 40px auto; padding: 25px; background: #fff; border-left: 5px solid #2c3e50; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .key-terms { max-width: 1050px; margin: 20px auto 40px auto; padding: 25px; background: #fff; border-left: 5px solid #2c3e50; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); box-sizing: border-box; }
         .term-item { margin-bottom: 12px; font-size: 14px; }
         .term-title { font-weight: bold; color: #2c3e50; }
         .tag-no { color: #d68910; font-weight: bold; }
         .tag-yes { color: #2980b9; font-weight: bold; }
 
-        .tables-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; max-width: 950px; margin: 30px auto; }
-        .tax-table-wrapper { flex: 1; min-width: 300px; max-width: 450px; }
+        /* Fluid layout for tables */
+        .tables-container { display: flex; flex-wrap: wrap; justify-content: space-between; max-width: 1050px; margin: 30px auto; }
+        .tax-table-wrapper { width: 49%; min-width: 320px; box-sizing: border-box; margin-bottom: 20px; }
         .tax-table { border-collapse: collapse; width: 100%; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-radius: 8px; overflow: hidden; }
         .tax-table th { background: #2c3e50; color: white; padding: 12px; font-size: 14px; text-align: left; }
         .tax-table td { padding: 10px 12px; border-bottom: 1px solid #eee; font-size: 14px; color: #333; }
         .tax-table tr:last-child td { border-bottom: none; }
         .table-title { font-weight: bold; font-size: 16px; margin-bottom: 10px; color: #2c3e50; text-align: center; }
 
-        @media (max-width: 600px) {
+        /* Mobile specific adjustments to ensure stacking when screen gets too small */
+        @media (max-width: 768px) {
+            .chart-box, .tax-table-wrapper { width: 100%; }
             .control-label { text-align: center; width: 100%; margin-bottom: 5px; }
         }
     </style>
@@ -48,13 +52,13 @@
 
     <div class="controls">
         <div class="control-group">
-            <span class="control-label">Question 1 (Facilities):</span>
+            <span class="control-label">Question 1:</span>
             <button id="q1-asis" class="toggle-btn q1-btn active" onclick="update('asis', currentQ2)">As-Is</button>
             <button id="q1-no" class="toggle-btn q1-btn" onclick="update('no', currentQ2)">Vote NO</button>
             <button id="q1-yes" class="toggle-btn q1-btn" onclick="update('yes', currentQ2)">Vote YES</button>
         </div>
         <div class="control-group">
-            <span class="control-label">Question 2 (Budget):</span>
+            <span class="control-label">Question 2:</span>
             <button id="q2-asis" class="toggle-btn q2-btn active" onclick="update(currentQ1, 'asis')">As-Is</button>
             <button id="q2-no" class="toggle-btn q2-btn" onclick="update(currentQ1, 'no')">Vote NO</button>
             <button id="q2-yes" class="toggle-btn q2-btn" onclick="update(currentQ1, 'yes')">Vote YES</button>
@@ -204,7 +208,6 @@
             g25.append("rect").attr("x", x("Expenditure")).attr("y", y(162.0)).attr("width", x.bandwidth()).attr("height", y(159.2) - y(162.0)).attr("fill", "#e2efda").attr("stroke", "#333").attr("stroke-dasharray", "4");
             addText(g25, x("Expenditure") + x.bandwidth()/2, y(162.0) + 14, "Mid-year Cut", "$2.8M", "#333", "10px");
 
-            // Only draw the Gap arrow if As-Is is selected for 2025-26
             if (q2 === 'asis') {
                 drawArrow(g25, x("Revenue") + x.bandwidth(), y(154.2), y(159.2), "$5.0M", "Gap", null);
             }
@@ -220,7 +223,6 @@
 
             if (s26.stateAidLoss > 0) {
                 g26.append("rect").attr("x", x("Revenue")).attr("y", y(s26.revTop)).attr("width", x.bandwidth()).attr("height", y(s26.revSolid) - y(s26.revTop)).attr("fill", "#e8eaf6").attr("stroke", "#333").attr("stroke-dasharray", "4");
-                // Text floats above the dashed box to ensure no overlap
                 addText(g26, x("Revenue") + x.bandwidth()/2, y(s26.revTop) - 22, "Less State Aid", s26.stateAidText, "#333", "10px");
             }
 
