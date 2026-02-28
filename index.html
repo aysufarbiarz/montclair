@@ -48,7 +48,7 @@
     <h1>Understand How Election Outcome Will Impact the School Deficit</h1>
 
     <div class="text-section">
-        <p>This visual is designed to help voters understand how the results of the two special election questions will impact MPS’s revenue and expenditures. It is divided into three parts:</p>
+        <p>You can use this interactive visual to explore how the results of the two special election questions will impact the school district's revenue and expenditures. It is divided into three parts:</p>
         <ol style="margin-top: 10px; margin-bottom: 10px; padding-left: 20px; line-height: 1.6;">
             <li><strong>Current State:</strong> A snapshot of where MPS currently stands before the vote with respect to the gap between revenue and expenses.</li>
             <li><strong>Interactive Scenarios:</strong> Shows how the four possible outcomes of the vote (No/No, No/Yes, Yes/No, Yes/Yes) impact the budget gap. By clicking on Yes/No under each question, you will see a graphic for that specific scenario.</li>
@@ -119,10 +119,8 @@
     </div>
 
     <script>
-        // Widened overall canvas to 700px. This allows for beautifully wide bars AND a huge empty gap for text.
         const w = 700, h = 420, margin = {top: 50, right: 160, bottom: 40, left: 50};        
         
-        // Padding at 0.55 ensures the gap between bars is very wide, preventing any text overlap.
         const x = d3.scaleBand().domain(["Revenue", "Expenditure"]).range([margin.left, w - margin.right]).padding(0.55);
         const y = d3.scaleLinear().domain([140, 175]).range([h - margin.bottom, margin.top]);
 
@@ -145,15 +143,12 @@
             if(line2) txt.append("tspan").attr("x", cx).attr("dy", "1.2em").text(line2);
         }
 
-        // New Arrow Function: Points completely from Top to Bottom, with text perfectly situated beside it.
         function drawDownArrow(group, xRightEdge, yTop, yBottom, line1, line2, line3) {
             const arrowX = xRightEdge + 15; 
             
-            // Full span line guarantees the arrow always shows up, even for 3.7M and 4.9M gaps
             group.append("line").attr("x1", arrowX).attr("y1", yTop).attr("x2", arrowX).attr("y2", yBottom)
                  .attr("stroke", "#ed7d31").attr("stroke-width", 2).attr("marker-end", "url(#arrow)");
             
-            // Vertically center the text block next to the arrow
             let lines = 1;
             if (line2) lines++;
             if (line3) lines++;
@@ -251,7 +246,8 @@
             addText(g25, x("Expenditure") + x.bandwidth()/2, y(162.0) + 14, "Mid-year Cut", "$2.8M", "#333", "10px");
 
             if (isAsIs) {
-                drawDownArrow(g25, x("Revenue") + x.bandwidth(), y(159.2), y(154.2), "$5.0M", "Current budget gap", "BEFORE the vote");
+                // Reverted to simple "OG" text for the Gap to prevent overlap
+                drawDownArrow(g25, x("Revenue") + x.bandwidth(), y(159.2), y(154.2), "$5.0M", "Gap", null);
                 
                 // Callout for $2.8M Cut (ONLY ON AS-IS)
                 const cutBoxX = x("Expenditure") + x.bandwidth();
@@ -280,7 +276,8 @@
                 g26.append("rect").attr("x", x("Expenditure")).attr("y", y(167.3)).attr("width", x.bandwidth()).attr("height", y(163.8) - y(167.3)).attr("fill", "#e2efda").attr("stroke", "#333").attr("stroke-dasharray", "4");
                 addText(g26, x("Expenditure") + x.bandwidth()/2, y(167.3) + 14, "Mid Year Cuts", "Annualized $3.5M", "#333", "9px");
 
-                drawDownArrow(g26, x("Revenue") + x.bandwidth(), y(163.8), y(155.3), "$8.5M", "Current budget gap", "BEFORE the vote");
+                // Reverted to simple "OG" text for Cuts to prevent overlap
+                drawDownArrow(g26, x("Revenue") + x.bandwidth(), y(163.8), y(155.3), "$8.5M", "Cuts", "Needed");
                 
                 // Callout for $3.5M Cut (ONLY ON AS-IS)
                 const cutBoxX26 = x("Expenditure") + x.bandwidth();
@@ -337,7 +334,6 @@
                 g26.append("rect").attr("x", x("Expenditure")).attr("y", y(cutTop)).attr("width", x.bandwidth()).attr("height", y(interestTop) - y(cutTop)).attr("fill", "#e2efda").attr("stroke", "#333").attr("stroke-dasharray", "4");
                 addText(g26, x("Expenditure") + x.bandwidth()/2, y(cutTop) + 14, "Mid Year Cuts", "Annualized $3.5M", "#333", "9px");
 
-                // Downward pointing arrow between the bars
                 drawDownArrow(g26, x("Revenue") + x.bandwidth(), y(interestTop), y(solidRevTop), s26.gapText, "Cuts", "Needed");
             }
         }
