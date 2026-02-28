@@ -83,14 +83,14 @@
     </div>
 
     <div class="key-terms" style="margin-bottom: 20px; margin-top: 0;">
-        <h3 style="margin-top:0;">The Ballot Questions</h3>
+        <h3 style="margin-top:0;">The Ballot Questions (Verbatim)</h3>
         <div class="term-item">
-            <span class="term-title">Question 1:</span> "Montclair in the County of Essex shall raise an additional $12,600,000 from taxes over the amount raised in the last annual school budget to cover a prior deficit from the 2024-2025 school year. Approval of these taxes will result in a one-time increase to the district’s tax levy. These expenditures are in addition to those required to achieve New Jersey Student Learning Standards. Do you approve this proposal?"<br>
-            <span style="font-size: 13px; color: #555;"><em><strong>Interpretive Statement:</strong> If approved by the voters, the funds will be used to pay outstanding debts and obligations due and owing from the previous school year. The tax will be non-recurring and will not be built into the base tax levy on which future years’ tax increase limits are based.</em></span>
+            <span class="term-title">Question 1:</span> "The Board of Education of the Township of Montclair in the County of Essex shall raise an additional $12,600,000 from taxes over the amount raised in the last Annual School Budget to cover a prior deficit from the 2024-2025 school year. Approval of these taxes will result in a one-time increase to the district's tax levy. These expenditures are in addition to those required to achieve New Jersey Student Learning Standards."<br>
+            <span style="font-size: 13px; color: #555;"><em><strong>Interpretive Statement:</strong> If approved by the voters, the funds will be used to pay outstanding debts and obligations due and owing from the previous school year. The tax will be non-recurring and will not be built into the base tax levy on which future years' tax increase limits are based.</em></span>
         </div>
         <div class="term-item" style="margin-bottom: 0;">
-            <span class="term-title">Question 2:</span> "The Board of Education of the Township of Montclair in the County of Essex shall raise an additional $5,000,000 from taxes over the amount raised for the current (2025-2026) annual school budget for general fund operating expenses for the 2025-2026 school year. Approval of these taxes will result in a permanent increase to the district’s tax levy. These expenditures are in addition to those required to achieve New Jersey Student Learning Standards. Do you approve this proposal?"<br>
-            <span style="font-size: 13px; color: #555;"><em><strong>Interpretive Statement:</strong> If approved by the voters, the funds will be used for general fund operating expenses, including, but not limited to: reducing the impact of reductions in force among teaching staff, security staff and support staff; addressing ongoing maintenance needs; and mitigating the impact of cuts to athletics, co-curricular and extracurricular programs. Approval of this tax levy increase will be built into the base tax levy on which future years’ tax increase limits are based.</em></span>
+            <span class="term-title">Question 2:</span> "The Board of Education of the Township of Montclair in the County of Essex shall raise an additional $5,000,000 from taxes over the amount raised for the current (2025-2026) Annual School Budget for general fund operating expenses for the 2025-2026 school year. Approval of these taxes will result in a permanent increase to the district's tax levy. These expenditures are in addition to those required to achieve New Jersey Student Learning Standards."<br>
+            <span style="font-size: 13px; color: #555;"><em><strong>Interpretive Statement:</strong> If approved by the voters, the funds will be used for general fund operating expenses, including, but not limited to: reducing the impact of reductions in force among teaching staff, security staff and support staff; addressing ongoing maintenance needs; and mitigating the impact of cuts to athletics, co-curricular and extracurricular programs.</em></span>
         </div>
     </div>
 
@@ -114,10 +114,8 @@
     </div>
 
     <script>
-        // Set chart to 600px wide. This creates a beautifully large gap between the bars.
         const w = 600, h = 420, margin = {top: 50, right: 120, bottom: 40, left: 50};        
         
-        // Padding increased to 0.45. The bars are wide, and the space between them fits the text perfectly.
         const x = d3.scaleBand().domain(["Revenue", "Expenditure"]).range([margin.left, w - margin.right]).padding(0.45);
         const y = d3.scaleLinear().domain([140, 175]).range([h - margin.bottom, margin.top]);
 
@@ -135,7 +133,6 @@
             'yes-yes': { baseRev: 155.3, taxLevy: 5.1, topRev: 160.4, stateAidLoss: 0,   stateAidText: "",      expBase: 163.8, monitor: 0,    interest: 0.35,  intText: "$350k", gapText: "$3.7M" }
         };
 
-        // Added align parameter to safely left-align side labels without breaking the code
         function addText(group, cx, cy, line1, line2, color, size, align="middle") {
             const txt = group.append("text").attr("x", cx).attr("y", cy).attr("text-anchor", align).attr("fill", color).style("font-size", size).style("font-weight", "bold");
             txt.append("tspan").attr("x", cx).text(line1);
@@ -149,7 +146,6 @@
             group.append("line").attr("x1", arrowX).attr("y1", yTop).attr("x2", arrowX).attr("y2", yBottom)
                  .attr("stroke", "#ed7d31").attr("stroke-width", 2).attr("marker-end", "url(#arrow)");
             
-            // Text is perfectly centered next to the downward pointing arrow
             let lines = 1;
             if (label2) lines++;
             if (label3) lines++;
@@ -171,7 +167,6 @@
                 svg.append("g").attr("transform", `translate(${margin.left},0)`).call(d3.axisLeft(y).ticks(8).tickFormat(d => "$" + d + "M"));
                 svg.append("g").attr("transform", `translate(0,${h - margin.bottom})`).call(d3.axisBottom(x));
                 
-                // Downward pointing arrowhead
                 svg.append("defs").append("marker")
                     .attr("id", "arrow").attr("viewBox", "0 0 10 10").attr("refX", 5).attr("refY", 5)
                     .attr("markerWidth", 6).attr("markerHeight", 6).attr("orient", "auto")
@@ -183,7 +178,7 @@
 
         function setAsIs() {
             isAsIs = true;
-            hasVoted = false; 
+            // Deliberately NOT resetting hasVoted so the tool "remembers" your state
             
             d3.select("#btn-asis").classed("active", true);
             d3.selectAll(".q1-btn, .q2-btn").classed("active", false);
@@ -195,6 +190,7 @@
         }
 
         function handleVote(question, vote) {
+            // First time someone interacts with the vote toggles
             if (!hasVoted) {
                 currentQ1 = vote;
                 currentQ2 = vote;
@@ -250,7 +246,6 @@
             if (isAsIs) {
                 drawGapArrow(g25, x("Revenue") + x.bandwidth(), y(159.2), y(154.2), "$5.0M", "Gap", null);
                 
-                // Callout specifically for Current State 25/26
                 const cutBoxX = x("Expenditure") + x.bandwidth();
                 const cutBoxY = y(162.0) + (y(159.2) - y(162.0))/2; 
                 g25.append("line").attr("x1", cutBoxX).attr("y1", cutBoxY).attr("x2", cutBoxX + 12).attr("y2", cutBoxY).attr("stroke", "#555").attr("stroke-width", 1).attr("stroke-dasharray", "2,2");
@@ -275,7 +270,6 @@
 
                 drawGapArrow(g26, x("Revenue") + x.bandwidth(), y(163.8), y(155.3), "$8.5M", "Cuts", "Needed");
                 
-                // Callout specifically for Current State 26/27
                 const cutBoxX26 = x("Expenditure") + x.bandwidth();
                 const cutBoxY26 = y(167.3) + (y(163.8) - y(167.3))/2; 
                 g26.append("line").attr("x1", cutBoxX26).attr("y1", cutBoxY26).attr("x2", cutBoxX26 + 12).attr("y2", cutBoxY26).attr("stroke", "#555").attr("stroke-width", 1).attr("stroke-dasharray", "2,2");
@@ -313,8 +307,6 @@
                 if (s26.monitor > 0) {
                     g26.append("rect").attr("x", x("Expenditure")).attr("y", y(monitorTop)).attr("width", x.bandwidth()).attr("height", y(s26.expBase) - y(monitorTop)).attr("fill", "#e6c229").attr("stroke", "#333");
                     g26.append("line").attr("x1", ax).attr("y1", y(s26.expBase)).attr("x2", ax + 12).attr("y2", y(s26.expBase) - 10).attr("stroke", "#e6c229").attr("stroke-width", 2);
-                    
-                    // Safely left-align text using the updated function parameter
                     addText(g26, ax + 16, y(s26.expBase) - 10, "State Monitor", "$150k", "#333", "10px", "start");
                 }
 
@@ -322,8 +314,6 @@
                     g26.append("rect").attr("x", x("Expenditure")).attr("y", y(interestTop)).attr("width", x.bandwidth()).attr("height", y(monitorTop) - y(interestTop)).attr("fill", "#f17105").attr("stroke", "#333");
                     const lineEndY = s26.monitor > 0 ? y(monitorTop) - 35 : y(monitorTop) - 20;
                     g26.append("line").attr("x1", ax).attr("y1", y(monitorTop)).attr("x2", ax + 12).attr("y2", lineEndY + 5).attr("stroke", "#f17105").attr("stroke-width", 2);
-                    
-                    // Safely left-align text using the updated function parameter
                     addText(g26, ax + 16, lineEndY + 5, "Interest", s26.intText, "#333", "10px", "start");
                 }
 
