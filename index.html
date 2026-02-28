@@ -27,7 +27,8 @@
         .toggle-btn { padding: 10px 20px; cursor: pointer; border: 2px solid #333; background: #fff; color: #333; font-weight: bold; font-size: 14px; border-radius: 6px; transition: 0.2s; }
         .toggle-btn.active { background: #333; color: white; }
         
-        h1 { text-align: center; margin-bottom: 20px; font-size: 28px; color: #2c3e50; }
+        h1 { text-align: center; margin-bottom: 5px; font-size: 28px; }
+        p.subtitle { text-align: center; color: #666; margin-bottom: 25px; font-size: 16px; font-weight: bold; }
         .unit-note { font-size: 11px; color: #888; text-align: right; margin-bottom: 10px; font-style: italic; }
         .chart-title { text-align: center; font-weight: bold; font-size: 16px; margin-bottom: 5px; color: #2c3e50; }
         
@@ -89,7 +90,7 @@
     </div>
 
     <div class="key-terms" style="margin-bottom: 20px; margin-top: 0;">
-        <h3 style="margin-top:0;">The Ballot Questions (Verbatim)</h3>
+        <h3 style="margin-top:0;">The Ballot Questions</h3>
         <div class="term-item">
             <span class="term-title">Question 1:</span> "The Board of Education of the Township of Montclair in the County of Essex shall raise an additional $12,600,000 from taxes over the amount raised in the last Annual School Budget to cover a prior deficit from the 2024-2025 school year. Approval of these taxes will result in a one-time increase to the district's tax levy. These expenditures are in addition to those required to achieve New Jersey Student Learning Standards."<br>
             <span style="font-size: 13px; color: #555;"><em><strong>Interpretive Statement:</strong> If approved by the voters, the funds will be used to pay outstanding debts and obligations due and owing from the previous school year. The tax will be non-recurring and will not be built into the base tax levy on which future years' tax increase limits are based.</em></span>
@@ -106,7 +107,7 @@
         <div class="term-item"><span class="tag-no">Advance of State Aid (Vote No):</span> An advance of future state aid, future year state aid amounts are lower to account for the aid already advanced (less state aid).</div>
         <div class="term-item"><span class="tag-yes">Tax Levy (Vote Yes):</span> A permanent increase in local tax revenue.</div>
         <div class="term-item"><span class="term-title">Mid-year Cuts:</span> Cuts implemented in January 2026. $2.8M in 25-26, and $3.5m when in place over the full 26-27 school year.</div>
-        <div class="term-item"><span class="term-title">State Monitor:</span> In the event of a no vote for either question, the district will take an advance of state aid. If the district takes any advance, then the state will assign a State Monitor.</div>
+        <div class="term-item"><span class="term-title">State Monitor:</span> In the event of a no vote for either question, the district will take an advance of state aid. If the district takes any advance, then the state will assign a state monitor.</div>
         <div class="term-item"><span class="term-title">Interest on Tax Anticipation Notes:</span> The district must pay its debts before the tax revenue will be collected. These notes allow the district to borrow money as a bridge. The district must pay interest on this short term bridge.</div>
         <div class="term-item"><span class="term-title">Cuts needed:</span> The amount of cuts the district will have to make to balance expenditures and revenues in 26/27 under each voting outcome scenario.</div>
         
@@ -119,10 +120,8 @@
     </div>
 
     <script>
-        // Widened the canvas and increased right margin to allow for wide bars + non-overlapping text
-        const w = 550, h = 420, margin = {top: 50, right: 120, bottom: 40, left: 50};        
-        
-        // Increased padding ensures there is a comfortable visual gap between Revenue and Expenditure
+        // Slightly widened canvas and increased right margin to create a larger gap between bars and prevent overlap
+        const w = 600, h = 420, margin = {top: 50, right: 120, bottom: 40, left: 50};        
         const x = d3.scaleBand().domain(["Revenue", "Expenditure"]).range([margin.left, w - margin.right]).padding(0.45);
         const y = d3.scaleLinear().domain([140, 175]).range([h - margin.bottom, margin.top]);
 
@@ -146,27 +145,25 @@
             if(line2) txt.append("tspan").attr("x", cx).attr("dy", "1.2em").text(line2);
         }
 
-        // Draws the arrow pointing DOWN. Text is centered safely in the gap ABOVE the arrow.
-        function drawArrowDown(group, yTop, yBottom, line1, line2, line3) {
-            const gapCenter = x("Revenue") + x.bandwidth() + (x("Expenditure") - x("Revenue") - x.bandwidth()) / 2;
+        // Updated Arrow Function: Always points DOWN from Top to Bottom
+        function drawGapArrow(group, xRightEdge, yTop, yBottom, label1, label2, label3) {
+            const arrowX = xRightEdge + 12; 
             
-            // Draw Text First
-            const textY = yTop + 15;
-            const txt = group.append("text").attr("x", gapCenter).attr("y", textY)
-                             .attr("fill", "#ed7d31").style("font-weight", "bold").style("font-size", "11px").attr("text-anchor", "middle");
+            group.append("line").attr("x1", arrowX).attr("y1", yTop).attr("x2", arrowX).attr("y2", yBottom)
+                 .attr("stroke", "#ed7d31").attr("stroke-width", 2).attr("marker-end", "url(#arrow)");
             
-            txt.append("tspan").attr("x", gapCenter).text(line1);
+            // Text centers vertically next to the downward pointing arrow
             let lines = 1;
-            if(line2) { txt.append("tspan").attr("x", gapCenter).attr("dy", "1.3em").text(line2); lines++; }
-            if(line3) { txt.append("tspan").attr("x", gapCenter).attr("dy", "1.3em").text(line3); lines++; }
+            if (label2) lines++;
+            if (label3) lines++;
+            const startY = ((yTop + yBottom) / 2) - ((lines - 1) * 12 / 2);
+
+            const txt = group.append("text").attr("x", arrowX + 8).attr("y", startY)
+                             .attr("fill", "#ed7d31").style("font-weight", "bold").style("font-size", "11px").attr("text-anchor", "start");
             
-            // Draw Arrow below the text pointing down
-            const lineStartY = textY + (lines - 1) * 14 + 8;
-            
-            if (lineStartY < yBottom - 5) {
-                group.append("line").attr("x1", gapCenter).attr("y1", lineStartY).attr("x2", gapCenter).attr("y2", yBottom)
-                     .attr("stroke", "#ed7d31").attr("stroke-width", 2).attr("marker-end", "url(#arrow)");
-            }
+            txt.append("tspan").attr("x", arrowX + 8).text(label1);
+            if(label2) txt.append("tspan").attr("x", arrowX + 8).attr("dy", "1.3em").text(label2);
+            if(label3) txt.append("tspan").attr("x", arrowX + 8).attr("dy", "1.3em").text(label3);
         }
 
         function init() {
@@ -177,6 +174,7 @@
                 svg.append("g").attr("transform", `translate(${margin.left},0)`).call(d3.axisLeft(y).ticks(8).tickFormat(d => "$" + d + "M"));
                 svg.append("g").attr("transform", `translate(0,${h - margin.bottom})`).call(d3.axisBottom(x));
                 
+                // Downward pointing arrowhead
                 svg.append("defs").append("marker")
                     .attr("id", "arrow").attr("viewBox", "0 0 10 10").attr("refX", 5).attr("refY", 5)
                     .attr("markerWidth", 6).attr("markerHeight", 6).attr("orient", "auto")
@@ -253,16 +251,16 @@
             addText(g25, x("Expenditure") + x.bandwidth()/2, y(162.0) + 14, "Mid-year Cut", "$2.8M", "#333", "10px");
 
             if (isAsIs) {
-                drawArrowDown(g25, y(159.2), y(154.2), "$5.0M", "Gap", null);
+                drawGapArrow(g25, x("Revenue") + x.bandwidth(), y(159.2), y(154.2), "$5.0M", "Gap", null);
                 
-                // Callout strictly for Current State
+                // Callout for $2.8M Cut (ONLY ON AS-IS)
                 const cutBoxX = x("Expenditure") + x.bandwidth();
                 const cutBoxY = y(162.0) + (y(159.2) - y(162.0))/2; 
-                g25.append("line").attr("x1", cutBoxX).attr("y1", cutBoxY).attr("x2", cutBoxX + 15).attr("y2", cutBoxY).attr("stroke", "#555").attr("stroke-width", 1).attr("stroke-dasharray", "2,2");
-                const calloutTxt = g25.append("text").attr("x", cutBoxX + 20).attr("y", cutBoxY - 8).attr("fill", "#555").style("font-size", "10px").style("font-style", "italic").attr("text-anchor", "start");
-                calloutTxt.append("tspan").attr("x", cutBoxX + 20).text("Because of mid-year");
-                calloutTxt.append("tspan").attr("x", cutBoxX + 20).attr("dy", "1.2em").text("cuts, expenses have");
-                calloutTxt.append("tspan").attr("x", cutBoxX + 20).attr("dy", "1.2em").text("been reduced");
+                g25.append("line").attr("x1", cutBoxX).attr("y1", cutBoxY).attr("x2", cutBoxX + 10).attr("y2", cutBoxY).attr("stroke", "#555").attr("stroke-width", 1).attr("stroke-dasharray", "2,2");
+                const calloutTxt = g25.append("text").attr("x", cutBoxX + 15).attr("y", cutBoxY - 8).attr("fill", "#555").style("font-size", "10px").style("font-style", "italic").attr("text-anchor", "start");
+                calloutTxt.append("tspan").attr("x", cutBoxX + 15).text("Because of mid-year");
+                calloutTxt.append("tspan").attr("x", cutBoxX + 15).attr("dy", "1.2em").text("cuts, expenses have");
+                calloutTxt.append("tspan").attr("x", cutBoxX + 15).attr("dy", "1.2em").text("been reduced");
             }
 
             // ==========================================
@@ -278,16 +276,16 @@
                 g26.append("rect").attr("x", x("Expenditure")).attr("y", y(167.3)).attr("width", x.bandwidth()).attr("height", y(163.8) - y(167.3)).attr("fill", "#e2efda").attr("stroke", "#333").attr("stroke-dasharray", "4");
                 addText(g26, x("Expenditure") + x.bandwidth()/2, y(167.3) + 14, "Mid Year Cuts", "Annualized $3.5M", "#333", "9px");
 
-                drawArrowDown(g26, y(163.8), y(155.3), "$8.5M", "Cuts", "Needed");
+                drawGapArrow(g26, x("Revenue") + x.bandwidth(), y(163.8), y(155.3), "$8.5M", "Cuts", "Needed");
                 
-                // Callout strictly for Current State
+                // Callout for $3.5M Cut (ONLY ON AS-IS)
                 const cutBoxX26 = x("Expenditure") + x.bandwidth();
                 const cutBoxY26 = y(167.3) + (y(163.8) - y(167.3))/2; 
-                g26.append("line").attr("x1", cutBoxX26).attr("y1", cutBoxY26).attr("x2", cutBoxX26 + 15).attr("y2", cutBoxY26).attr("stroke", "#555").attr("stroke-width", 1).attr("stroke-dasharray", "2,2");
-                const calloutTxt26 = g26.append("text").attr("x", cutBoxX26 + 20).attr("y", cutBoxY26 - 8).attr("fill", "#555").style("font-size", "10px").style("font-style", "italic").attr("text-anchor", "start");
-                calloutTxt26.append("tspan").attr("x", cutBoxX26 + 20).text("Annualized impact");
-                calloutTxt26.append("tspan").attr("x", cutBoxX26 + 20).attr("dy", "1.2em").text("of midyear cuts");
-                calloutTxt26.append("tspan").attr("x", cutBoxX26 + 20).attr("dy", "1.2em").text("from 2025");
+                g26.append("line").attr("x1", cutBoxX26).attr("y1", cutBoxY26).attr("x2", cutBoxX26 + 10).attr("y2", cutBoxY26).attr("stroke", "#555").attr("stroke-width", 1).attr("stroke-dasharray", "2,2");
+                const calloutTxt26 = g26.append("text").attr("x", cutBoxX26 + 15).attr("y", cutBoxY26 - 8).attr("fill", "#555").style("font-size", "10px").style("font-style", "italic").attr("text-anchor", "start");
+                calloutTxt26.append("tspan").attr("x", cutBoxX26 + 15).text("Annualized impact");
+                calloutTxt26.append("tspan").attr("x", cutBoxX26 + 15).attr("dy", "1.2em").text("of midyear cuts");
+                calloutTxt26.append("tspan").attr("x", cutBoxX26 + 15).attr("dy", "1.2em").text("from 2025");
             
             } else {
                 const s26 = scenarios26[`${currentQ1}-${currentQ2}`];
@@ -318,20 +316,20 @@
                 if (s26.monitor > 0) {
                     g26.append("rect").attr("x", x("Expenditure")).attr("y", y(monitorTop)).attr("width", x.bandwidth()).attr("height", y(s26.expBase) - y(monitorTop)).attr("fill", "#e6c229").attr("stroke", "#333");
                     g26.append("line").attr("x1", ax).attr("y1", y(s26.expBase)).attr("x2", ax + 12).attr("y2", y(s26.expBase) - 10).attr("stroke", "#e6c229").attr("stroke-width", 2);
-                    addText(g26, ax + 18, y(s26.expBase) - 10, "State Monitor", "$150k", "#333", "10px").attr("text-anchor", "start");
+                    addText(g26, ax + 20, y(s26.expBase) - 10, "State Monitor", "$150k", "#333", "10px").attr("text-anchor", "start");
                 }
 
                 if (s26.interest > 0) {
                     g26.append("rect").attr("x", x("Expenditure")).attr("y", y(interestTop)).attr("width", x.bandwidth()).attr("height", y(monitorTop) - y(interestTop)).attr("fill", "#f17105").attr("stroke", "#333");
                     const lineEndY = s26.monitor > 0 ? y(monitorTop) - 35 : y(monitorTop) - 20;
                     g26.append("line").attr("x1", ax).attr("y1", y(monitorTop)).attr("x2", ax + 12).attr("y2", lineEndY + 5).attr("stroke", "#f17105").attr("stroke-width", 2);
-                    addText(g26, ax + 18, lineEndY + 5, "Interest", s26.intText, "#333", "10px").attr("text-anchor", "start");
+                    addText(g26, ax + 20, lineEndY + 5, "Interest", s26.intText, "#333", "10px").attr("text-anchor", "start");
                 }
 
                 g26.append("rect").attr("x", x("Expenditure")).attr("y", y(cutTop)).attr("width", x.bandwidth()).attr("height", y(interestTop) - y(cutTop)).attr("fill", "#e2efda").attr("stroke", "#333").attr("stroke-dasharray", "4");
                 addText(g26, x("Expenditure") + x.bandwidth()/2, y(cutTop) + 14, "Mid Year Cuts", "Annualized $3.5M", "#333", "9px");
 
-                drawArrowDown(g26, y(interestTop), y(solidRevTop), s26.gapText, "Cuts", "Needed");
+                drawGapArrow(g26, x("Revenue") + x.bandwidth(), y(interestTop), y(solidRevTop), s26.gapText, "Cuts", "Needed");
             }
         }
 
