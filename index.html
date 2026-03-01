@@ -17,18 +17,19 @@
         .text-section p:last-child { margin-bottom: 0; }
         .notes-text { font-style: italic; color: #555; font-size: 14px; margin-top: 20px; }
         
-        .controls { text-align: center; margin-bottom: 25px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); max-width: 750px; margin-left: auto; margin-right: auto; }
+        /* Expanded controls box to match chart width */
+        .controls { text-align: center; margin-bottom: 25px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); max-width: 1050px; margin-left: auto; margin-right: auto; }
         
         .master-btn { padding: 12px 30px; cursor: pointer; border: 2px solid #2c3e50; background: #f8f9fa; color: #2c3e50; font-weight: bold; font-size: 16px; border-radius: 8px; transition: 0.2s; display: inline-block; margin-bottom: 15px; }
         .master-btn.active { background: #2c3e50; color: white; }
         
-        /* Center-Split Layout for Controls */
-        .control-group { margin: 15px 0; display: flex; align-items: center; justify-content: center; }
-        .label-wrapper { flex: 1; text-align: right; padding-right: 15px; }
-        .control-label { font-weight: bold; font-size: 16px; color: #2c3e50; }
-        .buttons-wrapper { flex: 1; text-align: left; display: flex; gap: 10px; padding-left: 15px; }
+        /* New Layout that perfectly aligns YES/NO gap with the Chart gap */
+        .controls-row { display: flex; justify-content: space-between; margin: 10px 0; max-width: 1050px; }
+        .controls-left { width: 49%; display: flex; justify-content: flex-end; align-items: center; gap: 15px; }
+        .controls-right { width: 49%; display: flex; justify-content: flex-start; align-items: center; }
         
-        .toggle-btn { padding: 10px 20px; cursor: pointer; border: 2px solid #333; background: #fff; color: #333; font-weight: bold; font-size: 14px; border-radius: 6px; transition: 0.2s; }
+        .control-label { font-weight: bold; font-size: 16px; color: #2c3e50; }
+        .toggle-btn { padding: 10px 20px; cursor: pointer; border: 2px solid #333; background: #fff; color: #333; font-weight: bold; font-size: 14px; border-radius: 6px; transition: 0.2s; min-width: 110px; }
         .toggle-btn.active { background: #333; color: white; }
         
         h1 { text-align: center; margin-bottom: 20px; font-size: 28px; color: #2c3e50; }
@@ -43,10 +44,10 @@
 
         @media (max-width: 768px) {
             .chart-box { width: 100%; }
-            /* Safely stacks the center-split layout on small mobile screens */
-            .control-group { flex-direction: column; }
-            .label-wrapper { text-align: center; padding-right: 0; margin-bottom: 8px; }
-            .buttons-wrapper { text-align: center; padding-left: 0; justify-content: center; }
+            /* Mobile fallback keeping things centered */
+            .controls-row { justify-content: center; gap: 10px; }
+            .controls-left { width: auto; justify-content: center; }
+            .controls-right { width: auto; justify-content: center; }
         }
     </style>
 </head>
@@ -63,17 +64,22 @@
         
         <hr style="border: 0; border-top: 1px solid #eee; margin: 10px 0 20px 0;">
 
-        <div class="control-group">
-            <div class="label-wrapper"><span class="control-label">Question 1:</span></div>
-            <div class="buttons-wrapper">
+        <div class="controls-row">
+            <div class="controls-left">
+                <span class="control-label">Question 1:</span>
                 <button id="q1-yes" class="toggle-btn q1-btn" onclick="handleVote('q1', 'yes')">Vote YES</button>
+            </div>
+            <div class="controls-right">
                 <button id="q1-no" class="toggle-btn q1-btn" onclick="handleVote('q1', 'no')">Vote NO</button>
             </div>
         </div>
-        <div class="control-group">
-            <div class="label-wrapper"><span class="control-label">Question 2:</span></div>
-            <div class="buttons-wrapper">
+        
+        <div class="controls-row">
+            <div class="controls-left">
+                <span class="control-label">Question 2:</span>
                 <button id="q2-yes" class="toggle-btn q2-btn" onclick="handleVote('q2', 'yes')">Vote YES</button>
+            </div>
+            <div class="controls-right">
                 <button id="q2-no" class="toggle-btn q2-btn" onclick="handleVote('q2', 'no')">Vote NO</button>
             </div>
         </div>
@@ -264,7 +270,7 @@
             }
 
             // ==========================================
-            // CHART 2: 26/27 SCENARIO
+            // CHART 2: 2026-27 SCENARIO
             // ==========================================
             if (isAsIs) {
                 g26.append("rect").attr("x", x("Revenue")).attr("y", y(155.3)).attr("width", x.bandwidth()).attr("height", y(140) - y(155.3)).attr("fill", "#4a71be");
