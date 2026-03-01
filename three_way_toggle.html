@@ -51,7 +51,6 @@
 
     <div class="controls">
         <button id="btn-asis" class="master-btn active" onclick="setAsIs()">View current state of our budget (before the vote)</button>
-        <div style="font-style: italic; color: #666; font-size: 14px; margin-bottom: 20px;">Click here to see the visual of the current state of our deficit</div>
         
         <hr style="border: 0; border-top: 1px solid #eee; margin: 10px 0 20px 0;">
 
@@ -209,7 +208,7 @@
             d3.selectAll(".q2-btn").classed("active", false);
             d3.select("#q2-" + currentQ2).classed("active", true);
 
-            d3.select("#title-25").text(`2025-26 Scenario: Q2 ${currentQ2.toUpperCase()}`);
+            d3.select("#title-25").text(`2025-26 Scenario: Q1 See Notes, Q2 ${currentQ2.toUpperCase()}`);
             d3.select("#title-26").text(`2026-27 Scenario: Q1 ${currentQ1.toUpperCase()}, Q2 ${currentQ2.toUpperCase()}`);
 
             renderCharts();
